@@ -1,5 +1,14 @@
 {0 Bio_io}
 
+{{:https://github.com/mooreryan/bio_io/actions/workflows/build_and_test.yml}{%html:
+<img
+src="https://github.com/mooreryan/bio_io/actions/workflows/build_and_test.yml/badge.svg"
+alt="Build and test"/> %}}
+{{:https://coveralls.io/github/mooreryan/bio_io?branch=main}{%html:
+<img
+src="https://coveralls.io/repos/github/mooreryan/bio_io/badge.svg?branch=main"
+alt="Coverage Status"/> %}}
+
 {b {{!Bio_io} The full API is browsable here}}.
 
 [Bio_io] is an OCaml library that provides programmatic access to
