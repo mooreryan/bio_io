@@ -1,0 +1,49 @@
+TEST_COV_D = /tmp/bio_io
+BROWSER = firefox
+
+.PHONY: build
+build:
+	dune build
+
+.PHONY: check
+check:
+	dune build @check
+
+.PHONY: clean
+clean:
+	dune clean
+
+.PHONY: docs
+docs:
+	dune build @doc
+	$(BROWSER) _build/default/_doc/_html/index.html
+
+.PHONY: install
+install: build
+	dune install
+
+.PHONY: promote
+promote:
+	dune promote
+
+.PHONY: uninstall
+uninstall:
+	dune uninstall
+
+.PHONY: test
+test:
+	dune runtest
+
+.PHONY: test_coverage
+test_coverage:
+	if [ -d $(TEST_COV_D) ]; then rm -r $(TEST_COV_D); fi
+	mkdir -p $(TEST_COV_D)
+	BISECT_FILE=$(TEST_COV_D)/bio_io dune runtest --no-print-directory \
+	  --instrument-with bisect_ppx --force
+	bisect-ppx-report html --coverage-path $(TEST_COV_D)
+	bisect-ppx-report summary --coverage-path $(TEST_COV_D)
+	$(BROWSER) _coverage/index.html
+
+.PHONY: send_coverage
+send_coverage: test_coverage
+	bisect-ppx-report send-to Coveralls --coverage-path $(TEST_COV_D)
