@@ -51,6 +51,9 @@ test_coverage:
 	  --instrument-with bisect_ppx --force
 	bisect-ppx-report html --coverage-path $(TEST_COV_D)
 	bisect-ppx-report summary --coverage-path $(TEST_COV_D)
+
+.PHONY: test_coverage_open
+test_coverage_open: test_coverage
 	$(BROWSER) _coverage/index.html
 
 .PHONY: send_coverage
