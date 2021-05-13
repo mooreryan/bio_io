@@ -1,5 +1,6 @@
-TEST_COV_D = /tmp/bio_io
 BROWSER = firefox
+DOCS_D = docs
+TEST_COV_D = /tmp/bio_io
 
 .PHONY: build
 build:
@@ -17,6 +18,14 @@ clean:
 docs:
 	dune build @doc
 	$(BROWSER) _build/default/_doc/_html/index.html
+
+.PHONY: docs_site
+docs_site:
+	if [ -d $(DOCS_D) ]; then rm -r $(DOCS_D); fi
+	dune build @doc && \
+	  mv _build/default/_doc/_html docs && \
+	  chmod 755 $(DOCS_D) && \
+	  $(BROWSER) ./$(DOCS_D)/index.html
 
 .PHONY: install
 install: build
