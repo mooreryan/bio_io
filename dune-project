@@ -2,6 +2,8 @@
 
 (generate_opam_files true)
 
+(name bio_io)
+
 (package
  (name bio_io)
  (license "MIT or Apache-2.0")
