@@ -2,7 +2,7 @@
 
 {b {{!Bio_io} The full API is browsable here}}.
 
-[Bio_io] is an OCaml library that provides programatic access to
+[Bio_io] is an OCaml library that provides programmatic access to
 common file formats used in bioinformatics like FASTA files.
 
 If you have any issues or find any bugs, open an issue on the
