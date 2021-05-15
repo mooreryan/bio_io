@@ -27,6 +27,10 @@ docs_site:
 	  chmod 755 $(DOCS_D) && \
 	  $(BROWSER) ./$(DOCS_D)/index.html
 
+.PHONY: everything
+everything: clean build test_coverage_open docs install
+	@echo "EVERYTHING!!!"
+
 .PHONY: install
 install: build
 	dune install
