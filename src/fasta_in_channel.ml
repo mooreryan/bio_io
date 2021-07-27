@@ -2,9 +2,9 @@ open! Core_kernel
 
 module U = Utils
 
-(* Some of these we could define with some of the other functions
-   directly, but to keep it consistent, all non [_exn] functions are
-   defined in terms of their [exn] function. *)
+(* Some of these we could define with some of the other functions directly, but
+   to keep it consistent, all non [_exn] functions are defined in terms of their
+   [exn] function. *)
 
 type t = In_channel.t
 
@@ -23,8 +23,7 @@ let equal c1 c2 = In_channel.equal c1 c2
 
 exception Exn of string [@@deriving sexp]
 
-let clean_sequence s =
-  s |> String.strip |> String.substr_replace_all ~pattern:" " ~with_:""
+let clean_sequence s = String.filter s ~f:(fun c -> Char.(c <> ' '))
 
 let of_in_channel chan = chan
 let to_in_channel chan = chan
@@ -132,10 +131,9 @@ let record_sequence chan =
       | None -> None
       | Some chan'' -> (
           match input_record chan'' with
-          (* Some Error seems weird, but we need to yield an Error so
-             the caller can handle it, then we need to trigger one
-             more yield iteration to end the sequence next time with
-             the None channel. *)
+          (* Some Error seems weird, but we need to yield an Error so the caller
+             can handle it, then we need to trigger one more yield iteration to
+             end the sequence next time with the None channel. *)
           | Error err -> Some (Error err, None)
           | Ok record -> (
               match record with

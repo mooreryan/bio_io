@@ -1,10 +1,25 @@
 BROWSER = firefox
+BENCH_D = bench
 DOCS_D = docs
 TEST_COV_D = /tmp/bio_io
 
+.PHONY: bench
+bench: bench_fasta bench_fasta_exe
+
+.PHONY: bench_fasta
+bench_fasta:
+	BENCH_FASTA_INFILE=$(BENCH_D)/seqs.10000.faa \
+	  dune exec ./bench/bench_fasta.exe 2> /dev/null
+
+.PHONY: bench_fasta_exe
+bench_fasta_exe:
+	dune build --profile=release && \
+	  BENCH_FASTA_INFILE=$(BENCH_D)/seqs.10000.faa \
+	  hyperfine -w 30 './_build/default/bench/bench_fasta_exe.exe 2> /dev/null'
+
 .PHONY: build
 build:
-	dune build
+	dune build --profile=release
 
 .PHONY: check
 check:
@@ -21,7 +36,7 @@ docs:
 
 .PHONY: docs_site
 docs_site:
-	if [ -d $(DOCS_D) ]; then rm -r $(DOCS_D); fi
+	if [ -d $(DOCS_D) ]; then rm -rf $(DOCS_D); fi
 	dune build @doc && \
 	  mv _build/default/_doc/_html docs && \
 	  chmod 755 $(DOCS_D) && \

@@ -102,7 +102,7 @@
 
     Get total length of all sequences in the file.
 
-    Watch out as this may raise exceptions...see the [_exn] suffix?
+    Watch out as this may raise exceptions...see the [_exn] suffix.
 
     {[
       let total_length =
