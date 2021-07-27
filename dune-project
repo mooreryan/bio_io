@@ -17,6 +17,8 @@
  (synopsis "A library for reading and writing common file formats used in bioinformatics like FASTA files")
  (depends
   (bisect_ppx :dev)
+  (core (and (>= "0.12") :dev))
+  (core_bench (and (>= "0.12") :dev))
   (core_kernel (>= "0.12"))
   (ppx_sexp_conv (>= "0.12"))
   (ocaml (>= "4.07.0"))
