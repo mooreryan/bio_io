@@ -18,6 +18,11 @@ jobs:
           - ubuntu-latest
         ocaml-compiler:
           - 4.12.0
+          - 4.11.2
+          - 4.10.2
+          - 4.09.1
+          - 4.08.1
+          - 4.07.1
 
     runs-on: ${{ matrix.os }}
 
@@ -43,7 +48,9 @@ jobs:
       - run: opam exec -- make install
 
       - run: opam exec -- make test
+        if: matrix.ocaml-compiler != '4.07.1'
 
       - run: opam exec -- make send_coverage
+        if: matrix.ocaml-compiler == '4.12.0'
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
