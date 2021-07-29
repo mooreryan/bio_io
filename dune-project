@@ -21,5 +21,4 @@
   (core_bench (and (>= "0.12") :dev))
   (core_kernel (>= "0.12"))
   (ppx_sexp_conv (>= "0.12"))
-  (ocaml (>= "4.07.0"))
-  (ocaml (and (>= "4.08.0") :with-test))))
+  (ocaml (>= "4.08.0"))))

@@ -22,7 +22,6 @@ jobs:
           - 4.10.2
           - 4.09.1
           - 4.08.1
-          - 4.07.1
 
     runs-on: ${{ matrix.os }}
 
@@ -37,20 +36,13 @@ jobs:
           dune-cache: true
           cache-prefix: v1-${{ matrix.os }}
 
-      - name: Install (with-test)
-        run: opam install . --deps-only --with-doc --with-test
-        if: matrix.ocaml-compiler != '4.07.1'
-
-      - name: Install (no-test)
-        run: opam install . --deps-only --with-doc
-        if: matrix.ocaml-compiler == '4.07.1'
+      - run: opam install . --deps-only --with-doc --with-test
 
       - run: opam exec -- make build
 
       - run: opam exec -- make install
 
       - run: opam exec -- make test
-        if: matrix.ocaml-compiler != '4.07.1'
 
       - run: opam exec -- make send_coverage
         if: matrix.ocaml-compiler == '4.12.0'
