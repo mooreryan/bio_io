@@ -16,7 +16,7 @@ jobs:
         os:
           - macos-latest
           - ubuntu-latest
-        ocaml-version:
+        ocaml-compiler:
           - 4.12.0
 
     runs-on: ${{ matrix.os }}
@@ -25,10 +25,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Use OCaml ${{ matrix.ocaml-version }}
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
         uses: ocaml/setup-ocaml@v2
         with:
-          ocaml-version: ${{ matrix.ocaml-version }}
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          dune-cache: true
+          cache-prefix: v1-${{ matrix.os }}
 
       - run: opam pin add bio_io.dev . --no-action
 
