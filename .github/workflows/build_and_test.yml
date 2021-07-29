@@ -37,7 +37,13 @@ jobs:
           dune-cache: true
           cache-prefix: v1-${{ matrix.os }}
 
-      - run: opam install . --deps-only --with-doc --with-test
+      - name: Install (with-test)
+        run: opam install . --deps-only --with-doc --with-test
+        if: matrix.ocaml-compiler != '4.07.1'
+
+      - name: Install (no-test)
+        run: opam install . --deps-only --with-doc
+        if: matrix.ocaml-compiler == '4.07.1'
 
       - run: opam exec -- make build
 
