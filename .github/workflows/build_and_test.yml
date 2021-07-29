@@ -37,10 +37,6 @@ jobs:
           dune-cache: true
           cache-prefix: v1-${{ matrix.os }}
 
-      - run: opam pin add bio_io.dev . --no-action
-
-      - run: opam depext bio_io --yes --with-doc --with-test
-
       - run: opam install . --deps-only --with-doc --with-test
 
       - run: opam exec -- make build

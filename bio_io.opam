@@ -10,7 +10,7 @@ homepage: "https://github.com/mooreryan/bio_io"
 doc: "https://mooreryan.github.io/bio_io/"
 bug-reports: "https://github.com/mooreryan/bio_io/issues"
 depends: [
-  "dune" {>= "2.8"}
+  "dune" {>= "2.9"}
   "bisect_ppx" {dev}
   "core" {>= "0.12" & dev}
   "core_bench" {>= "0.12" & dev}
@@ -21,7 +21,7 @@ depends: [
   "odoc" {with-doc}
 ]
 build: [
-  ["dune" "subst"] {dev}
+  ["dune" "subst" "--root" "."] {dev}
   [
     "dune"
     "build"
@@ -29,9 +29,12 @@ build: [
     name
     "-j"
     jobs
+    "--promote-install-files"
+    "false"
     "@install"
     "@runtest" {with-test}
     "@doc" {with-doc}
   ]
+  ["dune" "install" "-p" name "--create-install-files" name]
 ]
 dev-repo: "git+https://github.com/mooreryan/bio_io.git"
