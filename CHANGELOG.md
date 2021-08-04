@@ -4,9 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [Unreleased][Unreleased]
 
 NA
+
+## [0.1.2][0.1.2] -- 2021-08-04
+
+- Added some benchmarks.
+- Sped up fasta parsing.
 
 ## [0.1.1][0.1.1] -- 2021-05-15
 
@@ -19,6 +24,7 @@ NA
 
 Initial commit!
 
-[Unreleased]: https://github.com/mooreryan/divnet-rs/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/mooreryan/divnet-rs/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/mooreryan/bio_io/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/mooreryan/bio_io/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/mooreryan/bio_io/releases/tag/v0.1.0
