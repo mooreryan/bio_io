@@ -1,4 +1,4 @@
-(lang dune 2.9)
+(lang dune 2.8)
 
 (generate_opam_files true)
 
@@ -17,8 +17,8 @@
  (synopsis "A library for reading and writing common file formats used in bioinformatics like FASTA files")
  (depends
   (bisect_ppx :dev)
-  (core (and (>= "0.12") :dev))
-  (core_bench (and (>= "0.12") :dev))
-  (core_kernel (>= "0.12"))
-  (ppx_sexp_conv (>= "0.12"))
+  (core (and (>= "v0.12") :dev))
+  (core_bench (and (>= "v0.12") :dev))
+  (core_kernel (>= "v0.12"))
+  (ppx_sexp_conv (>= "v0.12"))
   (ocaml (>= "4.08.0"))))
