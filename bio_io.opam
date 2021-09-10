@@ -14,9 +14,12 @@ depends: [
   "bisect_ppx" {dev}
   "core" {>= "v0.12" & dev}
   "core_bench" {>= "v0.12" & dev}
-  "core_kernel" {>= "v0.12"}
+  "ppx_expect" {>= "v0.12" & dev}
+  "ppx_inline_test" {>= "v0.12" & dev}
+  "base" {>= "v0.12"}
   "ppx_sexp_conv" {>= "v0.12"}
   "ocaml" {>= "4.08.0"}
+  "stdio" {>= "v0.12"}
   "odoc" {with-doc}
 ]
 build: [

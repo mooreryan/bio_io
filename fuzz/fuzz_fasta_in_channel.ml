@@ -1,11 +1,11 @@
+open! Base
 open Bio_io
-open! Core_kernel
 
 let abort ?(exit_code = 1) msg =
-  let () = Printf.eprintf "%s\n" msg in
-  exit exit_code
+  let () = Stdio.eprintf "%s\n" msg in
+  Caml.exit exit_code
 
-let argv = Sys.argv
+let argv = Sys.get_argv ()
 
 let fname =
   match Array.length argv with

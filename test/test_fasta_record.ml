@@ -1,11 +1,16 @@
-open! Core_kernel
-open! Bio_io
+open! Base
+open Bio_io
 
-(* Fasta_record equal *)
+let print_endline = Stdio.print_endline
+let printf = Stdio.printf
+let eprintf = Stdio.eprintf
+let sprintf = Printf.sprintf
 
-let os_equal = Option.equal String.equal
+let exit = Caml.exit
+let raise_notrace = Caml.raise_notrace
 
 let print_sexp s = print_endline @@ Sexp.to_string_hum ~indent:1 s
+let os_equal = Option.equal String.equal
 
 let%expect_test _ =
   Fasta_record.create ~id:"" ~desc:None ~seq:""

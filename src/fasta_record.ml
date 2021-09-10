@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Base
 
 type t = { id : string; desc : string option; seq : string } [@@deriving sexp]
 
@@ -10,7 +10,7 @@ let of_header_exn s =
   match String.is_prefix s ~prefix:">" with
   | false ->
       let msg =
-        sprintf "Header line should start with '>'.  Got: '%s'."
+        Printf.sprintf "Header line should start with '>'.  Got: '%s'."
           (String.prefix s 0)
       in
       raise (Exn msg)
@@ -25,8 +25,7 @@ let of_header_exn s =
       | id :: desc ->
           { id; desc = Some (String.concat ~sep:" " desc); seq = "" }
       | [] ->
-          (* String.split should at least give [""].  Should never get
-             here. *)
+          (* String.split should at least give [""]. Should never get here. *)
           assert false)
 
 let of_header s =

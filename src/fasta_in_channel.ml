@@ -1,10 +1,7 @@
-open! Core_kernel
+open! Base
 
+module In_channel = Stdio.In_channel
 module U = Utils
-
-(* Some of these we could define with some of the other functions directly, but
-   to keep it consistent, all non [_exn] functions are defined in terms of their
-   [exn] function. *)
 
 type t = In_channel.t
 

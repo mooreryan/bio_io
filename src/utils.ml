@@ -1,4 +1,4 @@
-open! Core_kernel
+open! Base
 
 let try0 f =
   match f () with
@@ -16,7 +16,7 @@ let try_fold f_ a ~init ~f =
   | exception exn -> Or_error.error "Caught exception" exn Exn.sexp_of_t
   | result -> Or_error.return result
 
-(* Run a map-like function catching errors.  Also good for iter-like
+(* Run a map-like function catching errors. Also good for iter-like
    functions. *)
 let try_map f_ a ~f =
   match f_ a ~f with

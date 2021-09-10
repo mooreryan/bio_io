@@ -46,7 +46,7 @@
 
     would change give you a [t] with the [id] set to ["apple"]. *)
 
-open! Core_kernel
+open! Base
 
 (** {1 API} *)
 

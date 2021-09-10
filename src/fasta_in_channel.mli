@@ -201,7 +201,7 @@
 
 (** {1 API} *)
 
-open! Core_kernel
+open! Base
 
 type t
 
@@ -243,10 +243,10 @@ val with_file : string -> f:(t -> 'a) -> 'a Or_error.t
 
 (** {2 Utilities} *)
 
-val of_in_channel : In_channel.t -> t
+val of_in_channel : Stdio.In_channel.t -> t
 (** [of_in_channel chan] converts an [In_channel.t] to a [t]. *)
 
-val to_in_channel : t -> In_channel.t
+val to_in_channel : t -> Stdio.In_channel.t
 (** [to_in_channel t] converts a [t] to an [In_channel.t]. *)
 
 val equal : t -> t -> bool

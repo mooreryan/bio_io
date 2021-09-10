@@ -1,17 +1,33 @@
-open! Core_kernel
-open! Bio_io
+open! Base
+open Bio_io
+
+module Filename = Caml.Filename
+module In_channel = Stdio.In_channel
+module Out_channel = Stdio.Out_channel
 
 exception Exit
+
+let print_endline = Stdio.print_endline
+let printf = Stdio.printf
+let eprintf = Stdio.eprintf
+let sprintf = Printf.sprintf
+
+let exit = Caml.exit
+let raise_notrace = Caml.raise_notrace
 
 (* This one works with core kernel. *)
 let write_tmp_file data =
   let fname =
-    Filename.concat Filename.temp_dir_name "bio_io_test_fasta_in_channel.txt"
+    Filename.concat
+      (Filename.get_temp_dir_name ())
+      "bio_io_test_fasta_in_channel.txt"
   in
   let () =
-    match Sys.file_exists fname with true -> Sys.remove fname | false -> ()
+    match Caml.Sys.file_exists fname with
+    | true -> Caml.Sys.remove fname
+    | false -> ()
   in
-  let chan = Core_kernel.Out_channel.create fname in
+  let chan = Out_channel.create fname in
   let () = Out_channel.output_string chan data in
   let () = Out_channel.flush chan in
   let () = Out_channel.close chan in
@@ -21,7 +37,7 @@ let%expect_test _ =
   let () =
     match Fasta_in_channel.create "ashoetnaoshntoasehnt" with
     | Ok _ -> assert false
-    | Error err -> print_endline @@ Error.to_string_hum err
+    | Error err -> Stdio.print_endline @@ Error.to_string_hum err
   in
   [%expect
     {|
@@ -55,7 +71,8 @@ let%expect_test _ =
     Or_error.ok_exn
     @@ Fasta_in_channel.with_file name ~f:(fun chan ->
            let record = Or_error.ok_exn @@ Fasta_in_channel.input_record chan in
-           (* For some reason the type inference is weird with Option.value_exn *)
+           (* For some reason the type inference is weird with
+              Option.value_exn *)
            Fasta_record.serialize @@ Option.value_exn record)
   in
   print_endline expected;
@@ -414,8 +431,8 @@ let%expect_test _ =
 
   |}]
 
-(* Easiest is probably to use the non exception version to wrap the
-   exception version. *)
+(* Easiest is probably to use the non exception version to wrap the exception
+   version. *)
 let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.seqs in
   let result =
@@ -524,8 +541,8 @@ let%expect_test _ =
 
   |}]
 
-(* Here are some "normal" usage tests to make sure everyting is
-   looking good.  Some of these are from the docs.*)
+(* Here are some "normal" usage tests to make sure everyting is looking good.
+   Some of these are from the docs.*)
 
 let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.seqs in

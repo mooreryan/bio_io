@@ -6,7 +6,7 @@
 
 (package
  (name bio_io)
- (version 0.1.2)
+ (version 0.1.3)
  (license "MIT")
  (maintainers "Ryan Moore")
  (authors "Ryan Moore")
@@ -19,6 +19,9 @@
   (bisect_ppx :dev)
   (core (and (>= "v0.12") :dev))
   (core_bench (and (>= "v0.12") :dev))
-  (core_kernel (>= "v0.12"))
+  (ppx_expect (and (>= "v0.12") :dev))
+  (ppx_inline_test (and (>= "v0.12") :dev))
+  (base (>= "v0.12"))
   (ppx_sexp_conv (>= "v0.12"))
-  (ocaml (>= "4.08.0"))))
+  (ocaml (>= "4.08.0"))
+  (stdio (>= "v0.12"))))
