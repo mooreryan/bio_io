@@ -89,6 +89,18 @@ val desc : t -> string option
 val seq : t -> string
 (** [seq t] returns the [seq] of the [t]. *)
 
+val seq_length : t -> int
+(** [seq_length t] returns the length of the [seq] of [t].
+
+    If you construct a record by hand (e.g., with [create]), and there are
+    spaces or other weird characters in the sequences, they will be counted in
+    the length. E.g.,
+
+    {[
+      let r = Fasta_record.create ~id:"apple" ~desc:None ~seq:"a a" in
+      assert (Int.(3 = Fasta_record.seq_length r))
+    ]} *)
+
 val with_id : string -> t -> t
 (** [with_id new_id t] returns a [t] with [new_id] instead of the original [id]. *)
 

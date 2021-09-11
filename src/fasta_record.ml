@@ -51,6 +51,7 @@ let ( = ) = equal
 let id r = r.id
 let desc r = r.desc
 let seq r = r.seq
+let seq_length r = String.length r.seq
 
 let with_id id r = { r with id }
 let with_seq seq r = { r with seq }

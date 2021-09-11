@@ -100,3 +100,21 @@ let%test _ =
     ((Or_error.equal Fasta_record.equal)
        (Fasta_record.of_header ">apple pie")
        (Fasta_record.of_header ">apple"))
+
+(* Sequence length *)
+let%test _ =
+  let r = Fasta_record.create ~id:"apple" ~desc:None ~seq:"" in
+  Int.(0 = Fasta_record.seq_length r)
+
+let%test _ =
+  let r = Fasta_record.create ~id:"apple" ~desc:None ~seq:"a" in
+  Int.(1 = Fasta_record.seq_length r)
+
+let%test _ =
+  let r = Fasta_record.create ~id:"apple" ~desc:None ~seq:"aa" in
+  Int.(2 = Fasta_record.seq_length r)
+
+let%test "if spaces are in the sequence, they are counted as part of the length"
+    =
+  let r = Fasta_record.create ~id:"apple" ~desc:None ~seq:"a a" in
+  Int.(3 = Fasta_record.seq_length r)
