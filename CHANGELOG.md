@@ -1,6 +1,6 @@
 ## Unreleased
 
-NA
+- Require Base rather than Core_kernel
 
 ## 0.1.2 (2021-08-04)
 
