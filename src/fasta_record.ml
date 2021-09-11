@@ -38,6 +38,8 @@ let to_string r =
   | None -> Printf.sprintf ">%s\n%s" r.id r.seq
   | Some desc -> Printf.sprintf ">%s %s\n%s" r.id desc r.seq
 
+let to_string_nl ?(nl = "\n") r = to_string r ^ nl
+
 let serialize r = Sexp.to_string_hum (sexp_of_t r)
 
 let equal r1 r2 =

@@ -71,6 +71,11 @@ val to_string : t -> string
 (** [to_string t] returns a string representation of [t] ready to print to a
     FASTA output file. *)
 
+val to_string_nl : ?nl:string -> t -> string
+(** [to_string_nl t ~nl] returns a string representation of [t] ready to print
+    to a FASTA output file, including a trailing newline (nl) string. [nl]
+    defaults to ["\n"]. *)
+
 val serialize : t -> string
 (** [serialize t] returns the [Sexp] of [t] as a string. *)
 

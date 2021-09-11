@@ -82,7 +82,7 @@ let%expect_test "simple fold" =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.seqs in
   let actual =
     Fasta_in_channel.with_file_fold_records name ~init:"" ~f:(fun acc record ->
-        acc ^ Fasta_record.to_string record ^ "\n")
+        acc ^ Fasta_record.to_string_nl record)
   in
   print_endline (Or_error.ok_exn actual);
   [%expect {|
@@ -96,7 +96,7 @@ let%expect_test "tricky fold" =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.tricky_seqs in
   let actual =
     Fasta_in_channel.with_file_fold_records name ~init:"" ~f:(fun acc record ->
-        acc ^ Fasta_record.to_string record ^ "\n")
+        acc ^ Fasta_record.to_string_nl record ~nl:"\n")
   in
   print_endline (Or_error.ok_exn actual);
   [%expect
