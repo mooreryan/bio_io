@@ -16,12 +16,15 @@
  (bug_reports "https://github.com/mooreryan/bio_io/issues")
  (synopsis "A library for reading and writing common file formats used in bioinformatics like FASTA files")
  (depends
-  (bisect_ppx :dev)
-  (core (and (>= "v0.12") :dev))
-  (core_bench (and (>= "v0.12") :dev))
-  (ppx_expect (and (>= "v0.12") :dev))
-  (ppx_inline_test (and (>= "v0.12") :dev))
+  ; Runtime dependencies
   (base (>= "v0.12"))
   (ppx_sexp_conv (>= "v0.12"))
   (ocaml (>= "4.08.0"))
-  (stdio (>= "v0.12"))))
+  (stdio (>= "v0.12"))
+  ; Development dependencies
+  (bisect_ppx :dev)
+  (core (and (>= "v0.12") :dev))
+  (core_bench (and (>= "v0.12") :dev))
+  ; Test-only dependencies
+  (ppx_expect (and (>= "v0.12") :with-test))
+  (ppx_inline_test (and (>= "v0.12") :with-test))))
