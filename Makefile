@@ -1,6 +1,6 @@
 BROWSER = firefox
 BENCH_D = bench
-DOCS_D = docs
+DOCS_D = _docs
 TEST_COV_D = /tmp/bio_io
 
 .PHONY: bench
@@ -33,15 +33,13 @@ clean:
 .PHONY: docs
 docs:
 	dune build @doc
-	$(BROWSER) _build/default/_doc/_html/index.html
 
 .PHONY: docs_site
 docs_site:
 	if [ -d $(DOCS_D) ]; then rm -rf $(DOCS_D); fi
 	dune build @doc && \
-	  mv _build/default/_doc/_html docs && \
-	  chmod 755 $(DOCS_D) && \
-	  $(BROWSER) ./$(DOCS_D)/index.html
+	  mv _build/default/_doc/_html $(DOCS_D) && \
+	  chmod 755 $(DOCS_D)
 
 .PHONY: everything
 everything: clean build test_coverage_open docs install
