@@ -15,6 +15,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Use OCaml 4.12.0
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: 4.12.0
+          dune-cache: true
+          cache-prefix: v1-ubuntu-latest-4.12.0
+
+      - run: opam install . --deps-only --with-doc
+
       - run: make docs_site
       - run: git checkout gh-pages
       - run: if [ -d docs ]; then rm -r docs; fi
