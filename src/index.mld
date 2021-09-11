@@ -2,7 +2,7 @@
 
 {{:https://github.com/mooreryan/bio_io/actions/workflows/build_and_test.yml}{%html:
 <img
-src="https://github.com/mooreryan/bio_io/actions/workflows/build_and_test.yml/badge.svg"
+src="https://github.com/mooreryan/bio_io/actions/workflows/build_and_test.yml/badge.svg?branch=main"
 alt="Build and test"/> %}}
 {{:https://coveralls.io/github/mooreryan/bio_io?branch=main}{%html:
 <img

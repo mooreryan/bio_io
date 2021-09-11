@@ -1,6 +1,7 @@
 # Bio_io
 
-[![Build and test](https://github.com/mooreryan/bio_io/actions/workflows/build_and_test.yml/badge.svg)](https://github.com/mooreryan/bio_io/actions/workflows/build_and_test.yml) [![Coverage Status](https://coveralls.io/repos/github/mooreryan/bio_io/badge.svg?branch=main)](https://coveralls.io/github/mooreryan/bio_io?branch=main)
+
+[![Build and test](https://github.com/mooreryan/bio_io/actions/workflows/build_and_test.yml/badge.svg?branch=main)](https://github.com/mooreryan/bio_io/actions/workflows/build_and_test.yml)  [![Coverage Status](https://coveralls.io/repos/github/mooreryan/bio_io/badge.svg?branch=main)](https://coveralls.io/github/mooreryan/bio_io?branch=main)
 
 `Bio_io` is an OCaml library that provides programmatic access to
 common file formats used in bioinformatics like FASTA files.
