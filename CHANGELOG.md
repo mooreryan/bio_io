@@ -1,6 +1,11 @@
 ## Unreleased
 
-- Require Base rather than Core_kernel
+- NA
+
+## 0.2.0 (2021-09-11)
+
+- Require `Base` rather than `Core_kernel`
+- Add `seq_length` and `to_string_nl` functions to `Fasta_record` module
 
 ## 0.1.2 (2021-08-04)
 
