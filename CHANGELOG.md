@@ -1,6 +1,8 @@
 ## Unreleased
 
-- NA
+## 0.2.1 (2021-09-12)
+
+- Specify `ppx_expect` and `ppx_inline_test` as test dependencies rather than dev dependencies.
 
 ## 0.2.0 (2021-09-11)
 

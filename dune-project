@@ -6,7 +6,7 @@
 
 (package
  (name bio_io)
- (version 0.2.0)
+ (version 0.2.1)
  (license "MIT")
  (maintainers "Ryan Moore")
  (authors "Ryan Moore")
@@ -18,13 +18,13 @@
  (depends
   ; Runtime dependencies
   (base (>= "v0.12"))
-  (ppx_sexp_conv (>= "v0.12"))
   (ocaml (>= "4.08.0"))
+  (ppx_sexp_conv (>= "v0.12"))
   (stdio (>= "v0.12"))
+  ; Test-only dependencies
+  (ppx_expect (and (>= "v0.12") :with-test))
+  (ppx_inline_test (and (>= "v0.12") :with-test))
   ; Development dependencies
   (bisect_ppx :dev)
   (core (and (>= "v0.12") :dev))
-  (core_bench (and (>= "v0.12") :dev))
-  ; Test-only dependencies
-  (ppx_expect (and (>= "v0.12") :with-test))
-  (ppx_inline_test (and (>= "v0.12") :with-test))))
+  (core_bench (and (>= "v0.12") :dev))))
