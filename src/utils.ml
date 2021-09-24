@@ -10,6 +10,11 @@ let try1 f a =
   | exception exn -> Or_error.error "Caught exception" exn Exn.sexp_of_t
   | result -> Or_error.return result
 
+let try1' ~msg f a =
+  match f a with
+  | exception exn -> Or_error.error msg exn Exn.sexp_of_t
+  | result -> Or_error.return result
+
 (* Run a fold-like function catching errors. *)
 let try_fold f_ a ~init ~f =
   match f_ a ~init ~f with

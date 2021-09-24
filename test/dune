@@ -1,5 +1,5 @@
 (library
  (name test_bio_io)
- (libraries base bio_io stdio)
+ (libraries bio_io core_kernel stdio re2)
  (inline_tests)
- (preprocess (pps ppx_inline_test ppx_expect ppx_sexp_conv)))
+ (preprocess (pps ppx_assert ppx_inline_test ppx_expect ppx_sexp_conv)))
