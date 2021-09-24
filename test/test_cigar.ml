@@ -26,6 +26,22 @@ let%expect_test _ =
      ("Error parsing cigar string"
       (REDACTED Exn "Expected int or operation. Got A"))) |}]
 
+let%expect_test "negative count in the middle" =
+  print_cigar_parse_result @@ Cigar.of_string "12M-3I";
+  [%expect
+    {|
+    (Error
+     ("Error parsing cigar string"
+      (REDACTED Exn "Expected int or operation. Got -"))) |}]
+
+let%expect_test "negative count at the start" =
+  print_cigar_parse_result @@ Cigar.of_string "-12M3I";
+  [%expect
+    {|
+    (Error
+     ("Error parsing cigar string"
+      (REDACTED Exn "Expected int or operation. Got -"))) |}]
+
 let%expect_test _ =
   print_cigar_parse_result @@ Cigar.of_string "";
   [%expect {| (Ok ()) |}]

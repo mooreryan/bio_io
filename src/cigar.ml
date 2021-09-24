@@ -5,23 +5,41 @@ open! Base
 
 exception Exn of string [@@deriving sexp]
 
-type operation = Match | Deletion | Insertion [@@deriving equal, sexp]
+(** An operation describing an alignment. *)
+type op = Match | Deletion | Insertion [@@deriving equal, sexp]
 
-(* TODO ensure the count is non-zero. *)
-type pair = int * operation [@@deriving equal, sexp]
-
-type t = pair list [@@deriving equal, sexp]
-
-let cigar_op_of_char = function
+let op_of_char = function
   | 'M' -> Or_error.return Match
   | 'D' -> Or_error.return Deletion
   | 'I' -> Or_error.return Insertion
   | c -> Or_error.errorf "Expected M, D, or I. Got %c." c
 
-let cigar_op_to_string = function
-  | Match -> "M"
-  | Deletion -> "D"
-  | Insertion -> "I"
+let op_to_string = function Match -> "M" | Deletion -> "D" | Insertion -> "I"
+
+module Chunk : sig
+  (** Mint a new type here so the counts are guaranteed to be good. *)
+
+  type t [@@deriving equal, sexp]
+
+  val create : int -> op -> t Or_error.t
+  val to_string : t -> string
+
+  val count : t -> int
+  val op : t -> op
+end = struct
+  type t = int * op [@@deriving equal, sexp]
+
+  let create count op =
+    if count >= 0 then Or_error.return (count, op)
+    else Or_error.errorf "Count must be >= 0.  Got %d." count
+
+  let to_string (count, op) = Int.to_string count ^ op_to_string op
+
+  let count (count, _op) = count
+  let op (_count, op) = op
+end
+
+type t = Chunk.t list [@@deriving equal, sexp]
 
 let is_int = function
   | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' -> true
@@ -29,8 +47,7 @@ let is_int = function
 
 let is_cigar_op = function 'M' | 'D' | 'I' -> true | _ -> false
 
-(* One weird thing is that back to back same operations are allowed. See
-   tests. *)
+(* One weird thing is that back to back same ops are allowed. See tests. *)
 let of_string_exn s =
   let _, pairs =
     String.fold s ~init:("", []) ~f:(fun (current, all) c ->
@@ -48,23 +65,24 @@ let of_string_exn s =
             let count =
               if String.(current = "") then 1 else Int.of_string current
             in
-            let op = Or_error.ok_exn @@ cigar_op_of_char c in
-            ("", (count, op) :: all)
+            let op = Or_error.ok_exn @@ op_of_char c in
+            (* ok_exn okay here as the parsing disallows negative numbers. *)
+            let chunk = Or_error.ok_exn @@ Chunk.create count op in
+            ("", chunk :: all)
         | true, false -> (current ^ String.of_char c, all))
   in
   List.rev pairs
 
 let of_string s = Utils.try1' ~msg:"Error parsing cigar string" of_string_exn s
 
-let to_string cigar =
-  String.concat ~sep:""
-  @@ List.map cigar ~f:(fun (count, op) ->
-         Int.to_string count ^ cigar_op_to_string op)
+let to_string cigar = String.concat ~sep:"" @@ List.map cigar ~f:Chunk.to_string
 
 (* This is as in https://doi.org/10.1093/bioinformatics/bty262. Where ungapped
    is the alignment length minus number of gaps. I'm taking that to mean any
    position with a gap in either sequence is not counted. So the ungapped_length
    is the number of matches. *)
 let ungapped_alignment_length cigar =
-  List.fold cigar ~init:0 ~f:(fun acc (count, op) ->
-      match op with Match -> acc + count | Deletion | Insertion -> acc)
+  List.fold cigar ~init:0 ~f:(fun acc chunk ->
+      match Chunk.op chunk with
+      | Match -> acc + Chunk.count chunk
+      | Deletion | Insertion -> acc)
