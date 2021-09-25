@@ -17,6 +17,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      # New dependency for 0.3.0.  You can remove this once you update
+      # the Docker image.
+      - run: opam install ppx_compare
+
       - run: make docs_site
       - run: git checkout gh-pages
       - run: if [ -d docs ]; then rm -r docs; fi
