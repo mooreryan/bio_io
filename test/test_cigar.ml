@@ -250,18 +250,17 @@ let count_implementation re cigar =
        | "" -> count + 1
        | s -> count + Int.of_string s)
 
-let alignment_length cigar =
-  count_implementation (Re2.create_exn "([0-9]*)[MDI]") cigar
+let re_MID_chunk = Re2.create_exn "([0-9]*)[MID]"
+let re_ID_chunk = Re2.create_exn "([0-9]*)[ID]"
+let re_M_chunk = Re2.create_exn "([0-9]*)M"
+let re_MI_chunk = Re2.create_exn "([0-9]*)[MI]"
+let re_MD_chunk = Re2.create_exn "([0-9]*)[MD]"
 
-let num_gaps cigar = count_implementation (Re2.create_exn "([0-9]*)[ID]") cigar
-
-let num_matches cigar = count_implementation (Re2.create_exn "([0-9]*)M") cigar
-
-let query_length cigar =
-  count_implementation (Re2.create_exn "([0-9]*)[IM]") cigar
-
-let target_length cigar =
-  count_implementation (Re2.create_exn "([0-9]*)[DM]") cigar
+let alignment_length cigar = count_implementation re_MID_chunk cigar
+let num_gaps cigar = count_implementation re_ID_chunk cigar
+let num_matches cigar = count_implementation re_M_chunk cigar
+let query_length cigar = count_implementation re_MI_chunk cigar
+let target_length cigar = count_implementation re_MD_chunk cigar
 
 let count_fun_tester reference_impl real_impl =
   let generator = cigar_string_generator cigar_chunk_maybe_count_generator in
