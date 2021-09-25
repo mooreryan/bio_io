@@ -41,10 +41,28 @@ let%expect_test "negative count at the start" =
     (Error
      ("Error parsing cigar string"
       (REDACTED Exn "Expected int or operation. Got -"))) |}]
+(* Empty string gives error. *)
 
 let%expect_test _ =
   print_cigar_parse_result @@ Cigar.of_string "";
   [%expect {| (Ok ()) |}]
+
+(* Zero count chunks give errors. *)
+
+let%expect_test _ =
+  print_cigar_parse_result @@ Cigar.of_string "0M";
+  [%expect
+    {| (Error ("Error parsing cigar string" "Length must be > 0.  Got 0.")) |}]
+
+let%expect_test _ =
+  print_cigar_parse_result @@ Cigar.of_string "0D";
+  [%expect
+    {| (Error ("Error parsing cigar string" "Length must be > 0.  Got 0.")) |}]
+
+let%expect_test _ =
+  print_cigar_parse_result @@ Cigar.of_string "0I";
+  [%expect
+    {| (Error ("Error parsing cigar string" "Length must be > 0.  Got 0.")) |}]
 
 let%expect_test _ =
   print_cigar_parse_result @@ Cigar.of_string "M";
@@ -57,18 +75,6 @@ let%expect_test _ =
 let%expect_test _ =
   print_cigar_parse_result @@ Cigar.of_string "I";
   [%expect {| (Ok ((1 Insertion))) |}]
-
-let%expect_test _ =
-  print_cigar_parse_result @@ Cigar.of_string "0M";
-  [%expect {| (Ok ((0 Match))) |}]
-
-let%expect_test _ =
-  print_cigar_parse_result @@ Cigar.of_string "0D";
-  [%expect {| (Ok ((0 Deletion))) |}]
-
-let%expect_test _ =
-  print_cigar_parse_result @@ Cigar.of_string "0I";
-  [%expect {| (Ok ((0 Insertion))) |}]
 
 let%expect_test _ =
   print_cigar_parse_result @@ Cigar.of_string "1M";
@@ -110,19 +116,44 @@ let%expect_test "no integers mean 1" =
   [%expect {|
     (Ok ((1 Match) (1 Match) (1 Deletion) (1 Insertion))) |}]
 
-(* Ungapped length *)
+let%expect_test "no integers mean 1" =
+  print_endline @@ Cigar.to_string @@ Cigar.of_string_exn "MDIM";
+  [%expect {| 1M1D1I1M |}]
+
+(* Lengths and numbers of things. *)
 
 let%test _ =
   let cigar = Cigar.of_string "10MM" |> Or_error.ok_exn in
-  Cigar.ungapped_alignment_length cigar = 11
+  Cigar.num_matches cigar = 11
 
 let%test _ =
   let cigar = Cigar.of_string "1M1D1I1M" |> Or_error.ok_exn in
-  Cigar.ungapped_alignment_length cigar = 2
+  Cigar.num_matches cigar = 2
 
 let%test _ =
   let cigar = Cigar.of_string "DIDIDIDIDIDIDDDI" |> Or_error.ok_exn in
-  Cigar.ungapped_alignment_length cigar = 0
+  Cigar.num_matches cigar = 0
+
+let%test_unit _ =
+  [%test_result: int]
+    (Cigar.alignment_length @@ Cigar.of_string_exn "1M2I3D5M")
+    ~expect:11
+let%test_unit _ =
+  [%test_result: int]
+    (Cigar.num_gaps @@ Cigar.of_string_exn "1M2I3D5M")
+    ~expect:5
+let%test_unit _ =
+  [%test_result: int]
+    (Cigar.num_matches @@ Cigar.of_string_exn "1M2I3D5M")
+    ~expect:6
+let%test_unit _ =
+  [%test_result: int]
+    (Cigar.query_length @@ Cigar.of_string_exn "1M2I3D5M")
+    ~expect:8
+let%test_unit _ =
+  [%test_result: int]
+    (Cigar.target_length @@ Cigar.of_string_exn "1M2I3D5M")
+    ~expect:9
 
 (* Property tests *)
 
@@ -130,12 +161,12 @@ let%test _ =
 
 (* Generates non-negative ints of any size, unlike
    Q.Generator.small_non_negative_int. *)
-let non_negative_int_generator =
-  Q.Generator.filter Int.quickcheck_generator ~f:(fun n -> n >= 0)
+let positive_int_generator =
+  Q.Generator.filter Int.quickcheck_generator ~f:(fun n -> n > 0)
 
 (* Counts are technically optional. If there is no count, it is treated as a
    count of one. Will generate count of zero. *)
-let count_generator = Option.quickcheck_generator non_negative_int_generator
+let count_generator = Option.quickcheck_generator positive_int_generator
 
 let num_chunks_generator = Q.Generator.small_non_negative_int
 let operation_generator = Q.Generator.of_list [ "M"; "D"; "I" ]
@@ -143,13 +174,13 @@ let operation_list_generator = List.gen_non_empty operation_generator
 
 (* Compound generators. *)
 
-(* Generate a Cigar string chunk: "0M", "23432I", etc. *)
+(* Generate a Cigar string chunk: "23432I", etc. *)
 let cigar_chunk_with_count_generator =
-  Q.Generator.map2 operation_generator non_negative_int_generator
+  Q.Generator.map2 operation_generator positive_int_generator
     ~f:(fun op count -> Int.to_string count ^ op)
 
-(* Generate a Cigar string chunk. These may have no count: "D", "1D", "0M",
-   "23432I", etc. *)
+(* Generate a Cigar string chunk. These may have no count: "D", "1D", "23432I",
+   etc. *)
 let cigar_chunk_maybe_count_generator =
   Q.Generator.map2 operation_generator count_generator ~f:(fun op -> function
     | Some count -> Int.to_string count ^ op | None -> op)
@@ -208,20 +239,39 @@ let%test_unit "count of one and blank are the same" =
       let y = Cigar.sexp_of_t @@ Cigar.of_string_exn with_blanks in
       [%test_eq: Sexp.t] x y)
 
-(* Hacky regex implementation to count matches. Use it to check the real
-   implementation! *)
-let match_chunk = Re2.create_exn "([0-9]*)M"
-let count_matches cigar =
-  Re2.get_matches_exn match_chunk cigar
+(* Hacky regex implementations of length-like functions. Use it to check the
+   real implementation! *)
+
+let count_implementation re cigar =
+  Re2.get_matches_exn re cigar
   |> List.map ~f:(fun m -> m |> Re2.Match.get_exn ~sub:(`Index 1))
   |> List.fold ~init:0 ~f:(fun count -> function
        (* Remeber that blank string for count is really 1. *)
        | "" -> count + 1
        | s -> count + Int.of_string s)
 
-let%test_unit "ungapped_alignment_length is the number of matches" =
+let alignment_length cigar =
+  count_implementation (Re2.create_exn "([0-9]*)[MDI]") cigar
+
+let num_gaps cigar = count_implementation (Re2.create_exn "([0-9]*)[ID]") cigar
+
+let num_matches cigar = count_implementation (Re2.create_exn "([0-9]*)M") cigar
+
+let query_length cigar =
+  count_implementation (Re2.create_exn "([0-9]*)[IM]") cigar
+
+let target_length cigar =
+  count_implementation (Re2.create_exn "([0-9]*)[DM]") cigar
+
+let count_fun_tester reference_impl real_impl =
   let generator = cigar_string_generator cigar_chunk_maybe_count_generator in
   Q.test generator ~sexp_of:String.sexp_of_t ~f:(fun cigar_s ->
-      let num_matches = count_matches cigar_s in
+      let x = reference_impl cigar_s in
       let cigar = Cigar.of_string_exn cigar_s in
-      [%test_eq: int] num_matches (Cigar.ungapped_alignment_length cigar))
+      [%test_eq: int] x (real_impl cigar))
+
+let%test_unit _ = count_fun_tester alignment_length Cigar.alignment_length
+let%test_unit _ = count_fun_tester num_gaps Cigar.num_gaps
+let%test_unit _ = count_fun_tester num_matches Cigar.num_matches
+let%test_unit _ = count_fun_tester query_length Cigar.query_length
+let%test_unit _ = count_fun_tester target_length Cigar.target_length

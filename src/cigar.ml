@@ -5,38 +5,45 @@ open! Base
 
 exception Exn of string [@@deriving sexp]
 
-(** An operation describing an alignment. *)
-type op = Match | Deletion | Insertion [@@deriving equal, sexp]
+(** An operation describing an alignment.
+
+    - [Match]: A non-gap alignment position. May be a mismatch.
+    - [Insertion]: Gap in the target/reference sequence.
+    - [Deletion]: Gap in the query/read sequence.
+
+    (Note that the drive5 webpage has this backwards. It's possible they have
+    reversed definition of query and target.) *)
+type op = Match | Insertion | Deletion [@@deriving equal, sexp]
 
 let op_of_char = function
   | 'M' -> Or_error.return Match
-  | 'D' -> Or_error.return Deletion
   | 'I' -> Or_error.return Insertion
+  | 'D' -> Or_error.return Deletion
   | c -> Or_error.errorf "Expected M, D, or I. Got %c." c
 
-let op_to_string = function Match -> "M" | Deletion -> "D" | Insertion -> "I"
+let op_to_string = function Match -> "M" | Insertion -> "I" | Deletion -> "D"
 
 module Chunk : sig
-  (** Mint a new type here so the counts are guaranteed to be good. *)
+  (** Mint a new type here so the lengths are guaranteed to be good. *)
 
   type t [@@deriving equal, sexp]
 
   val create : int -> op -> t Or_error.t
   val to_string : t -> string
 
-  val count : t -> int
+  val length : t -> int
   val op : t -> op
 end = struct
   type t = int * op [@@deriving equal, sexp]
 
-  let create count op =
-    if count >= 0 then Or_error.return (count, op)
-    else Or_error.errorf "Count must be >= 0.  Got %d." count
+  let create length op =
+    if length > 0 then Or_error.return (length, op)
+    else Or_error.errorf "Length must be > 0.  Got %d." length
 
-  let to_string (count, op) = Int.to_string count ^ op_to_string op
+  let to_string (length, op) = Int.to_string length ^ op_to_string op
 
-  let count (count, _op) = count
-  let op (_count, op) = op
+  let length (length, _op) = length
+  let op (_length, op) = op
 end
 
 type t = Chunk.t list [@@deriving equal, sexp]
@@ -59,15 +66,15 @@ let of_string_exn s =
             raise (Exn ("Expected int or operation. Got " ^ Char.to_string c))
         | false, true ->
             (* You can get an Op without a preceding integer. In this case,
-               treat the count as 1. See
+               treat the length as 1. See
                https://drive5.com/usearch/manual/cigar.html: "In some CIGAR
                variants, the integer may be omitted if it is 1." *)
-            let count =
+            let length =
               if String.(current = "") then 1 else Int.of_string current
             in
             let op = Or_error.ok_exn @@ op_of_char c in
             (* ok_exn okay here as the parsing disallows negative numbers. *)
-            let chunk = Or_error.ok_exn @@ Chunk.create count op in
+            let chunk = Or_error.ok_exn @@ Chunk.create length op in
             ("", chunk :: all)
         | true, false -> (current ^ String.of_char c, all))
   in
@@ -77,12 +84,33 @@ let of_string s = Utils.try1' ~msg:"Error parsing cigar string" of_string_exn s
 
 let to_string cigar = String.concat ~sep:"" @@ List.map cigar ~f:Chunk.to_string
 
+let alignment_length cigar =
+  List.fold cigar ~init:0 ~f:(fun length chunk -> length + Chunk.length chunk)
+
+let num_gaps cigar =
+  List.fold cigar ~init:0 ~f:(fun acc chunk ->
+      match Chunk.op chunk with
+      | Insertion | Deletion -> acc + Chunk.length chunk
+      | Match -> acc)
+
 (* This is as in https://doi.org/10.1093/bioinformatics/bty262. Where ungapped
    is the alignment length minus number of gaps. I'm taking that to mean any
    position with a gap in either sequence is not counted. So the ungapped_length
    is the number of matches. *)
-let ungapped_alignment_length cigar =
+let num_matches cigar =
   List.fold cigar ~init:0 ~f:(fun acc chunk ->
       match Chunk.op chunk with
-      | Match -> acc + Chunk.count chunk
-      | Deletion | Insertion -> acc)
+      | Match -> acc + Chunk.length chunk
+      | Insertion | Deletion -> acc)
+
+let query_length cigar =
+  List.fold cigar ~init:0 ~f:(fun length chunk ->
+      match Chunk.op chunk with
+      | Match | Insertion -> length + Chunk.length chunk
+      | Deletion -> length)
+
+let target_length cigar =
+  List.fold cigar ~init:0 ~f:(fun length chunk ->
+      match Chunk.op chunk with
+      | Match | Deletion -> length + Chunk.length chunk
+      | Insertion -> length)

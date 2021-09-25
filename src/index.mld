@@ -32,6 +32,7 @@ except according to those terms.
 These are the main modules of [Bio_io].  API docs and examples can be
 found on the respective pages.
 
+- {{!Bio_io.Cigar} Cigar}: module for parsing CIGAR strings.
 - {{!Bio_io.Fasta_in_channel} Fasta_in_channel}: an input channel for
   reading FASTA files
 - {{!Bio_io.Fasta_record} Fasta_record}: a record type for FASTA files
