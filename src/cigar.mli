@@ -140,3 +140,48 @@ val target_length : t -> int
     length of the entire target sequence.
 
     {[ assert (9 = Cigar.target_length @@ Cigar.of_string_exn "1M2I3D5M") ]} *)
+
+(** {2 Drawing Functions} *)
+
+val draw : ?gap:char -> ?non_gap:char -> ?wrap:int -> t -> string
+(** [draw t ~gap ~non_gap ~wrap] outputs a string representation of the
+    aligmnent as inferred from the CIGAR string. This function is mainly just
+    for fun or if you want to learn how CIGAR strings work :)
+
+    - [gap] is the character to use for gaps. Default: ['-'].
+    - [non_gap] is the character to use for non-gaps. Default ['X'].
+    - [wrap] is the max length of the sequence to show in a line before
+      wrapping. Default is [60].
+
+    E.g., this [print_endline @@ draw "1M2I3D5M"]
+
+    would print this:
+
+    {[
+      target: X--XXXXXXXX
+      query:  XXX---XXXXX
+      op:     MIIDDDMMMMM
+    ]}
+
+    {3 Wrapping long sequences}
+
+    You can wrap long sequences so they don't take up so much horizontal space.
+    This code
+
+    {[ print_endline @@ Cigar.draw ~wrap:10 @@ Cigar.of_string_exn "25M" ]}
+
+    will print out
+
+    {[
+      t: XXXXXXXXXX
+      q: XXXXXXXXXX
+      o: MMMMMMMMMM
+
+      t: XXXXXXXXXX
+      q: XXXXXXXXXX
+      o: MMMMMMMMMM
+
+      t: XXXXX
+      q: XXXXX
+      o: MMMMM
+    ]} *)

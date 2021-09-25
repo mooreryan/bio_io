@@ -6,7 +6,7 @@
 
 (package
  (name bio_io)
- (version 0.3.0-alpha)
+ (version 0.3.0)
  (license "MIT")
  (maintainers "Ryan Moore")
  (authors "Ryan Moore")

@@ -155,6 +155,46 @@ let%test_unit _ =
     (Cigar.target_length @@ Cigar.of_string_exn "1M2I3D5M")
     ~expect:9
 
+(* Alignment drawing functions *)
+
+let drawing_test_input_string = "1M2I3D5M"
+
+let%expect_test _ =
+  print_endline @@ Cigar.draw @@ Cigar.of_string_exn drawing_test_input_string;
+  [%expect {|
+    t: X--XXXXXXXX
+    q: XXX---XXXXX
+    o: MIIDDDMMMMM |}]
+
+let%expect_test _ =
+  print_endline
+  @@ Cigar.draw ~gap:'.' ~non_gap:'+'
+  @@ Cigar.of_string_exn drawing_test_input_string;
+  [%expect {|
+    t: +..++++++++
+    q: +++...+++++
+    o: MIIDDDMMMMM |}]
+
+let%expect_test _ =
+  print_endline @@ Cigar.draw @@ Cigar.of_string_exn "";
+  [%expect {| |}]
+
+let%expect_test _ =
+  print_endline @@ Cigar.draw ~wrap:10 @@ Cigar.of_string_exn "25M";
+  [%expect
+    {|
+    t: XXXXXXXXXX
+    q: XXXXXXXXXX
+    o: MMMMMMMMMM
+
+    t: XXXXXXXXXX
+    q: XXXXXXXXXX
+    o: MMMMMMMMMM
+
+    t: XXXXX
+    q: XXXXX
+    o: MMMMM |}]
+
 (* Property tests *)
 
 (* Basic generators. *)

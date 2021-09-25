@@ -21,6 +21,7 @@ let op_of_char = function
   | 'D' -> Or_error.return Deletion
   | c -> Or_error.errorf "Expected M, D, or I. Got %c." c
 
+let op_to_char = function Match -> 'M' | Insertion -> 'I' | Deletion -> 'D'
 let op_to_string = function Match -> "M" | Insertion -> "I" | Deletion -> "D"
 
 module Chunk : sig
@@ -114,3 +115,58 @@ let target_length cigar =
       match Chunk.op chunk with
       | Match | Deletion -> length + Chunk.length chunk
       | Insertion -> length)
+
+(* "Drawing" functions and helpers *)
+
+let op_to_target_draw_char ?(gap = '-') ?(non_gap = '-') op =
+  match op with Match | Deletion -> non_gap | Insertion -> gap
+
+let op_to_query_draw_char ?(gap = '-') ?(non_gap = '-') op =
+  match op with Match | Insertion -> non_gap | Deletion -> gap
+
+let op_to_op_draw_char = op_to_char
+
+(* "Draw" a cigar string by converting the operations to the proper char
+   representation. Takes a [op_to_char_fun] so that you can use it for queries,
+   targets, and operation strings by passing the appropriate function. *)
+let draw_helper op_to_char_fun cigar =
+  String.concat ~sep:""
+  @@ List.map cigar ~f:(fun chunk ->
+         let c = op_to_char_fun @@ Chunk.op chunk in
+         String.make (Chunk.length chunk) c)
+
+let char_list_to_string cl =
+  String.concat ~sep:"" @@ List.map cl ~f:Char.to_string
+
+(** Take a [length] and a string [s], and break it up into [length] size splits.
+    The last split will have length <= [length]. *)
+let string_splits length s =
+  List.map ~f:char_list_to_string @@ List.chunks_of ~length @@ String.to_list s
+
+(* Will raise if strings are different length. *)
+let wrap_aligment max_len ~target ~target_label ~query ~query_label ~op
+    ~op_label =
+  let string_splits' = string_splits max_len in
+  (* Use _exn here as the strings passed in should have the same length from the
+     caller. *)
+  String.concat ~sep:"\n\n"
+  @@ List.map3_exn (string_splits' target) (string_splits' query)
+       (string_splits' op) ~f:(fun target_split query_split op_split ->
+         String.concat ~sep:"\n"
+           [
+             target_label ^ target_split;
+             query_label ^ query_split;
+             op_label ^ op_split;
+           ])
+
+let draw ?(gap = '-') ?(non_gap = 'X') ?(wrap = 60) cigar =
+  let draw_target = draw_helper @@ op_to_target_draw_char ~gap ~non_gap in
+  let draw_query = draw_helper @@ op_to_query_draw_char ~gap ~non_gap in
+  let draw_op = draw_helper op_to_op_draw_char in
+  let target_label = "t: " in
+  let query_label = "q: " in
+  let op_label = "o: " in
+  let target = draw_target cigar in
+  let query = draw_query cigar in
+  let op = draw_op cigar in
+  wrap_aligment wrap ~target ~target_label ~query ~query_label ~op ~op_label
