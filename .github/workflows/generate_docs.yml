@@ -3,7 +3,8 @@ name: Generate Docs
 on:
   push:
     branches:
-      - '*'
+      - 'master'
+      - 'staging'
 
 jobs:
   docs:
