@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 0.3.0 (2021-09-26)
+
 - Add `Cigar` module for parsing CIGAR strings.
 
 ## 0.2.1 (2021-09-12)
