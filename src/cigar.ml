@@ -3,6 +3,15 @@ open! Base
 (* Limited cigar format used by mmseqs.
    https://github.com/soedinglab/MMseqs2/wiki#alignment-format *)
 
+exception Int_overflow of (int * int) [@@deriving sexp]
+
+let add_exn x y =
+  let sum = x + y in
+  let sign_x = Int.sign x in
+  if Sign.(sign_x = Int.sign y && sign_x <> Int.sign sum) then
+    raise (Int_overflow (x, y))
+  else sum
+
 exception Exn of string [@@deriving sexp]
 
 (** An operation describing an alignment.
@@ -85,36 +94,47 @@ let of_string s = Utils.try1' ~msg:"Error parsing cigar string" of_string_exn s
 
 let to_string cigar = String.concat ~sep:"" @@ List.map cigar ~f:Chunk.to_string
 
-let alignment_length cigar =
-  List.fold cigar ~init:0 ~f:(fun length chunk -> length + Chunk.length chunk)
+let alignment_length_exn cigar =
+  List.fold cigar ~init:0 ~f:(fun length chunk ->
+      add_exn length (Chunk.length chunk))
 
-let num_gaps cigar =
+let alignment_length cigar = Utils.try1 alignment_length_exn cigar
+
+let num_gaps_exn cigar =
   List.fold cigar ~init:0 ~f:(fun acc chunk ->
       match Chunk.op chunk with
-      | Insertion | Deletion -> acc + Chunk.length chunk
+      | Insertion | Deletion -> add_exn acc (Chunk.length chunk)
       | Match -> acc)
+
+let num_gaps cigar = Utils.try1 num_gaps_exn cigar
 
 (* This is as in https://doi.org/10.1093/bioinformatics/bty262. Where ungapped
    is the alignment length minus number of gaps. I'm taking that to mean any
    position with a gap in either sequence is not counted. So the ungapped_length
    is the number of matches. *)
-let num_matches cigar =
+let num_matches_exn cigar =
   List.fold cigar ~init:0 ~f:(fun acc chunk ->
       match Chunk.op chunk with
-      | Match -> acc + Chunk.length chunk
+      | Match -> add_exn acc (Chunk.length chunk)
       | Insertion | Deletion -> acc)
 
-let query_length cigar =
+let num_matches cigar = Utils.try1 num_matches_exn cigar
+
+let query_length_exn cigar =
   List.fold cigar ~init:0 ~f:(fun length chunk ->
       match Chunk.op chunk with
-      | Match | Insertion -> length + Chunk.length chunk
+      | Match | Insertion -> add_exn length (Chunk.length chunk)
       | Deletion -> length)
 
-let target_length cigar =
+let query_length cigar = Utils.try1 query_length_exn cigar
+
+let target_length_exn cigar =
   List.fold cigar ~init:0 ~f:(fun length chunk ->
       match Chunk.op chunk with
-      | Match | Deletion -> length + Chunk.length chunk
+      | Match | Deletion -> add_exn length (Chunk.length chunk)
       | Insertion -> length)
+
+let target_length cigar = Utils.try1 target_length_exn cigar
 
 (* "Drawing" functions and helpers *)
 
@@ -133,6 +153,8 @@ let draw_helper op_to_char_fun cigar =
   String.concat ~sep:""
   @@ List.map cigar ~f:(fun chunk ->
          let c = op_to_char_fun @@ Chunk.op chunk in
+         (* WARNING: this can raise an Out of memory error depending on the
+            cigar string :) *)
          String.make (Chunk.length chunk) c)
 
 let char_list_to_string cl =
@@ -159,14 +181,26 @@ let wrap_aligment max_len ~target ~target_label ~query ~query_label ~op
              op_label ^ op_split;
            ])
 
-let draw ?(gap = '-') ?(non_gap = 'X') ?(wrap = 60) cigar =
-  let draw_target = draw_helper @@ op_to_target_draw_char ~gap ~non_gap in
-  let draw_query = draw_helper @@ op_to_query_draw_char ~gap ~non_gap in
-  let draw_op = draw_helper op_to_op_draw_char in
-  let target_label = "t: " in
-  let query_label = "q: " in
-  let op_label = "o: " in
-  let target = draw_target cigar in
-  let query = draw_query cigar in
-  let op = draw_op cigar in
-  wrap_aligment wrap ~target ~target_label ~query ~query_label ~op ~op_label
+let draw_exn ?(max_aln_len = 1000) ?(gap = '-') ?(non_gap = 'X') ?(wrap = 60)
+    cigar =
+  let len = alignment_length_exn cigar in
+  assert (len >= 0);
+  if len > max_aln_len then ""
+  else
+    let draw_target = draw_helper @@ op_to_target_draw_char ~gap ~non_gap in
+    let draw_query = draw_helper @@ op_to_query_draw_char ~gap ~non_gap in
+    let draw_op = draw_helper op_to_op_draw_char in
+    let target_label = "t: " in
+    let query_label = "q: " in
+    let op_label = "o: " in
+    let target = draw_target cigar in
+    let query = draw_query cigar in
+    let op = draw_op cigar in
+    wrap_aligment wrap ~target ~target_label ~query ~query_label ~op ~op_label
+
+let draw ?(max_aln_len = 1000) ?(gap = '-') ?(non_gap = 'X') ?(wrap = 60) cigar
+    =
+  match draw_exn ~max_aln_len ~gap ~non_gap ~wrap cigar with
+  | exception exn ->
+      Or_error.error "Couldn't calculate alignment length" exn Exn.sexp_of_t
+  | result -> Or_error.return result

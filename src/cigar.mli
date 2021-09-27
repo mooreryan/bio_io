@@ -45,20 +45,20 @@
 
     {2 Notes}
 
-    I refer to each number-letter pair as a chunk. Each chunk is a [length] and
-    an [operation]. The length specifies the number of consecutive operations.
-
-    Some programs generate chunks without a [length]--just the [operation]. In
-    these cases, the length is taken to be 1. So the following CIGAR strings
-    will parse into the same data structure: [MIDM] and [1M1I1D1M].
-
-    Empty CIGAR strings are allowed and do not raise errors. *)
+    - I refer to each number-letter pair as a chunk. Each chunk is a [length]
+      and an [operation]. The length specifies the number of consecutive
+      operations.
+    - Some programs generate chunks without a [length]--just the [operation]. In
+      these cases, the length is taken to be 1. So the following CIGAR strings
+      will parse into the same data structure: [MIDM] and [1M1I1D1M].
+    - Empty CIGAR strings are allowed and do not raise errors. *)
 
 open! Base
 
 (** {1 API} *)
 
 exception Exn of string [@@deriving sexp]
+exception Int_overflow of (int * int) [@@deriving sexp]
 
 type t [@@deriving equal, sexp]
 
@@ -89,7 +89,7 @@ val to_string : t -> string
       assert ("1M1D1I1M" = Cigar.to_string @@ Cigar.of_string_exn "1M2I3D5M")
     ]} *)
 
-(** {2 Length & count functions}
+(** {2:length_functions Length & count functions}
 
     The following functions return information about the aligment as inferred
     from the CIGAR string. Each of the examples uses this CIGAR string,
@@ -99,9 +99,25 @@ val to_string : t -> string
       target: X--XXXXXXXX
       query:  XXX---XXXXX
       op:     MIIDDDMMMMM
-    ]} *)
+    ]}
 
-val alignment_length : t -> int
+    Then "length" calculating functions can overflow on CIGAR strings describing
+    genome alignments. In practice, this won't happen often as generally you
+    will be parsing the results of local alignments, e.g., from BLAST, MMseqs2,
+    or reading SAM files.
+
+    Since it is possible to overflow integer arithmetic on CIGAR strings you may
+    parse, the length functions use an addition function that raises
+    [Int_overflow] exceptions rather than use {{:https://ocaml.org/api/Int.html}
+    two's complement wrapping}.
+
+    Thus, there are two versions, those that end in [_exn] that may raise
+    [Int_overflow] and those that return [t Or_error.t], which catch
+    [Int_overflow] and other exceptions. *)
+
+val alignment_length_exn : t -> int
+
+val alignment_length : t -> int Or_error.t
 (** [alignment_length t] returns the total length of the aligment as inferred by
     the Cigar string.
 
@@ -109,12 +125,16 @@ val alignment_length : t -> int
 
     {[ assert (11 = Cigar.alignment_length @@ Cigar.of_string_exn "1M2I3D5M") ]} *)
 
-val num_gaps : t -> int
+val num_gaps_exn : t -> int
+
+val num_gaps : t -> int Or_error.t
 (** [num_gaps t] returns the total number of gap columns in the alignment.
 
     {[ assert (5 = Cigar.num_gaps @@ Cigar.of_string_exn "1M2I3D5M") ]}*)
 
-val num_matches : t -> int
+val num_matches_exn : t -> int
+
+val num_matches : t -> int Or_error.t
 (** [num_matches t] returns the number of matches in the alignment.
 
     {[ assert (6 = Cigar.num_matches @@ Cigar.of_string_exn "1M2I3D5M") ]}
@@ -125,7 +145,9 @@ val num_matches : t -> int
     with a gap in either sequence is not counted. So the ungapped_length is the
     number of matches. *)
 
-val query_length : t -> int
+val query_length_exn : t -> int
+
+val query_length : t -> int Or_error.t
 (** [query_length t] returns the length of the query/read within the boundaries
     of the alignment. This is the length of the query as inferred by the Cigar
     string. If it is a local aligment, it may not be equal to the length of the
@@ -133,7 +155,9 @@ val query_length : t -> int
 
     {[ assert (8 = Cigar.query_length @@ Cigar.of_string_exn "1M2I3D5M") ]}*)
 
-val target_length : t -> int
+val target_length_exn : t -> int
+
+val target_length : t -> int Or_error.t
 (** [target_length t] returns the length of the target/reference within the
     boundaries of the alignment. This is the length of the target as inferred by
     the Cigar string. If it is a local aligment, it may not be equal to the
@@ -141,13 +165,29 @@ val target_length : t -> int
 
     {[ assert (9 = Cigar.target_length @@ Cigar.of_string_exn "1M2I3D5M") ]} *)
 
-(** {2 Drawing Functions} *)
+(** {2 Drawing Functions}
 
-val draw : ?gap:char -> ?non_gap:char -> ?wrap:int -> t -> string
-(** [draw t ~gap ~non_gap ~wrap] outputs a string representation of the
-    aligmnent as inferred from the CIGAR string. This function is mainly just
-    for fun or if you want to learn how CIGAR strings work :)
+    Drawing functions can also raise [Int_overflow] because they rely on the
+    length functions. Use [draw] rather than [draw_exn] to catch errors. *)
 
+val draw_exn :
+  ?max_aln_len:int -> ?gap:char -> ?non_gap:char -> ?wrap:int -> t -> string
+
+val draw :
+  ?max_aln_len:int ->
+  ?gap:char ->
+  ?non_gap:char ->
+  ?wrap:int ->
+  t ->
+  string Or_error.t
+(** [draw t ~max_aln_len ~gap ~non_gap ~wrap] outputs a string representation of
+    the aligmnent as inferred from the CIGAR string. This function is mainly
+    just for fun or if you want to learn how CIGAR strings work :)
+
+    - Use [max_aln_len] to prevent "drawing" alignments that are longer than
+      this value. Currently, this function allocates a string approx. three
+      times the entire size of the alignment. So keep this low... :) Default is
+      [1000].
     - [gap] is the character to use for gaps. Default: ['-'].
     - [non_gap] is the character to use for non-gaps. Default ['X'].
     - [wrap] is the max length of the sequence to show in a line before

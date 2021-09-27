@@ -124,35 +124,35 @@ let%expect_test "no integers mean 1" =
 
 let%test _ =
   let cigar = Cigar.of_string "10MM" |> Or_error.ok_exn in
-  Cigar.num_matches cigar = 11
+  Or_error.ok_exn @@ Cigar.num_matches cigar = 11
 
 let%test _ =
   let cigar = Cigar.of_string "1M1D1I1M" |> Or_error.ok_exn in
-  Cigar.num_matches cigar = 2
+  Or_error.ok_exn @@ Cigar.num_matches cigar = 2
 
 let%test _ =
   let cigar = Cigar.of_string "DIDIDIDIDIDIDDDI" |> Or_error.ok_exn in
-  Cigar.num_matches cigar = 0
+  Or_error.ok_exn @@ Cigar.num_matches cigar = 0
 
 let%test_unit _ =
   [%test_result: int]
-    (Cigar.alignment_length @@ Cigar.of_string_exn "1M2I3D5M")
+    (Cigar.alignment_length_exn @@ Cigar.of_string_exn "1M2I3D5M")
     ~expect:11
 let%test_unit _ =
   [%test_result: int]
-    (Cigar.num_gaps @@ Cigar.of_string_exn "1M2I3D5M")
+    (Cigar.num_gaps_exn @@ Cigar.of_string_exn "1M2I3D5M")
     ~expect:5
 let%test_unit _ =
   [%test_result: int]
-    (Cigar.num_matches @@ Cigar.of_string_exn "1M2I3D5M")
+    (Cigar.num_matches_exn @@ Cigar.of_string_exn "1M2I3D5M")
     ~expect:6
 let%test_unit _ =
   [%test_result: int]
-    (Cigar.query_length @@ Cigar.of_string_exn "1M2I3D5M")
+    (Cigar.query_length_exn @@ Cigar.of_string_exn "1M2I3D5M")
     ~expect:8
 let%test_unit _ =
   [%test_result: int]
-    (Cigar.target_length @@ Cigar.of_string_exn "1M2I3D5M")
+    (Cigar.target_length_exn @@ Cigar.of_string_exn "1M2I3D5M")
     ~expect:9
 
 (* Alignment drawing functions *)
@@ -160,7 +160,8 @@ let%test_unit _ =
 let drawing_test_input_string = "1M2I3D5M"
 
 let%expect_test _ =
-  print_endline @@ Cigar.draw @@ Cigar.of_string_exn drawing_test_input_string;
+  print_endline @@ Cigar.draw_exn
+  @@ Cigar.of_string_exn drawing_test_input_string;
   [%expect {|
     t: X--XXXXXXXX
     q: XXX---XXXXX
@@ -168,7 +169,7 @@ let%expect_test _ =
 
 let%expect_test _ =
   print_endline
-  @@ Cigar.draw ~gap:'.' ~non_gap:'+'
+  @@ Cigar.draw_exn ~gap:'.' ~non_gap:'+'
   @@ Cigar.of_string_exn drawing_test_input_string;
   [%expect {|
     t: +..++++++++
@@ -176,11 +177,11 @@ let%expect_test _ =
     o: MIIDDDMMMMM |}]
 
 let%expect_test _ =
-  print_endline @@ Cigar.draw @@ Cigar.of_string_exn "";
+  print_endline @@ Cigar.draw_exn @@ Cigar.of_string_exn "";
   [%expect {| |}]
 
 let%expect_test _ =
-  print_endline @@ Cigar.draw ~wrap:10 @@ Cigar.of_string_exn "25M";
+  print_endline @@ Cigar.draw_exn ~wrap:10 @@ Cigar.of_string_exn "25M";
   [%expect
     {|
     t: XXXXXXXXXX
@@ -207,6 +208,8 @@ let positive_int_generator =
 (* Counts are technically optional. If there is no count, it is treated as a
    count of one. Will generate count of zero. *)
 let count_generator = Option.quickcheck_generator positive_int_generator
+let small_count_generator = Quickcheck.Generator.small_positive_int
+(* TODO make a small count generating cigar generator. *)
 
 let num_chunks_generator = Q.Generator.small_non_negative_int
 let operation_generator = Q.Generator.of_list [ "M"; "D"; "I" ]
@@ -279,16 +282,41 @@ let%test_unit "count of one and blank are the same" =
       let y = Cigar.sexp_of_t @@ Cigar.of_string_exn with_blanks in
       [%test_eq: Sexp.t] x y)
 
+(* Length functions don't crash *)
+
+(* let%test_unit _ =
+ *   let generator = cigar_string_generator cigar_chunk_maybe_count_generator in
+ *   Q.test generator ~sexp_of:String.sexp_of_t ~f:(fun cigar_s ->
+ *       let cigar = Cigar.of_string_exn cigar_s in
+ *       let _x = Cigar.draw cigar in
+ *       ()) *)
+
 (* Hacky regex implementations of length-like functions. Use it to check the
    real implementation! *)
-
 let count_implementation re cigar =
-  Re2.get_matches_exn re cigar
-  |> List.map ~f:(fun m -> m |> Re2.Match.get_exn ~sub:(`Index 1))
-  |> List.fold ~init:0 ~f:(fun count -> function
-       (* Remeber that blank string for count is really 1. *)
-       | "" -> count + 1
-       | s -> count + Int.of_string s)
+  let add_exn x y =
+    let sum = x + y in
+    let sign_x = Int.sign x in
+    if Sign.(sign_x = Int.sign y && sign_x <> Int.sign sum) then
+      raise (Cigar.Int_overflow (x, y))
+    else sum
+  in
+  let f () =
+    let n =
+      Re2.get_matches_exn re cigar
+      |> List.map ~f:(fun m -> m |> Re2.Match.get_exn ~sub:(`Index 1))
+      (* Folding and adding up ints can overflow...which wraps around in
+         OCaml. *)
+      |> List.fold ~init:0 ~f:(fun count -> function
+           (* Remeber that blank string for count is really 1. *)
+           | "" -> add_exn count 1
+           | s -> add_exn count (Int.of_string s))
+    in
+    (* >= because empty strings return length of 0. *)
+    assert (n >= 0);
+    n
+  in
+  Utils.try0 f
 
 let re_MID_chunk = Re2.create_exn "([0-9]*)[MID]"
 let re_ID_chunk = Re2.create_exn "([0-9]*)[ID]"
@@ -305,12 +333,23 @@ let target_length cigar = count_implementation re_MD_chunk cigar
 let count_fun_tester reference_impl real_impl =
   let generator = cigar_string_generator cigar_chunk_maybe_count_generator in
   Q.test generator ~sexp_of:String.sexp_of_t ~f:(fun cigar_s ->
+      (* This will test that the same Int_overflow exception is thrown as
+         well. *)
       let x = reference_impl cigar_s in
-      let cigar = Cigar.of_string_exn cigar_s in
-      [%test_eq: int] x (real_impl cigar))
+      let y = real_impl (Cigar.of_string_exn cigar_s) in
+      [%test_eq: int Or_error.t] x y)
 
 let%test_unit _ = count_fun_tester alignment_length Cigar.alignment_length
 let%test_unit _ = count_fun_tester num_gaps Cigar.num_gaps
 let%test_unit _ = count_fun_tester num_matches Cigar.num_matches
 let%test_unit _ = count_fun_tester query_length Cigar.query_length
 let%test_unit _ = count_fun_tester target_length Cigar.target_length
+
+(* Drawing functions shouldn't crash on valid inputs. *)
+
+let%test_unit _ =
+  let generator = cigar_string_generator cigar_chunk_maybe_count_generator in
+  Q.test generator ~sexp_of:String.sexp_of_t ~f:(fun cigar_s ->
+      let cigar = Cigar.of_string_exn cigar_s in
+      let _x = Cigar.draw cigar in
+      ())
