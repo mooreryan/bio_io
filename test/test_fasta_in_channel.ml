@@ -35,7 +35,7 @@ let write_tmp_file data =
 
 let%expect_test _ =
   let () =
-    match Fasta_in_channel.create "ashoetnaoshntoasehnt" with
+    match Fasta.In_channel.create "ashoetnaoshntoasehnt" with
     | Ok _ -> assert false
     | Error err -> Stdio.print_endline @@ Error.to_string_hum err
   in
@@ -47,33 +47,33 @@ let%expect_test _ =
 
 let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.seqs in
-  let chan = Or_error.ok_exn @@ Fasta_in_channel.create name in
-  let closed = Or_error.ok_exn @@ Fasta_in_channel.close chan in
+  let chan = Or_error.ok_exn @@ Fasta.In_channel.create name in
+  let closed = Or_error.ok_exn @@ Fasta.In_channel.close chan in
   print_endline @@ Sexp.to_string_hum ([%sexp_of: unit] closed);
   [%expect {| () |}]
 
-let%test _ =
-  let actual =
-    Fasta_in_channel.to_in_channel @@ Or_error.ok_exn
-    @@ Fasta_in_channel.stdin ()
-  in
-  let expected = In_channel.stdin in
-  In_channel.equal actual expected
+(* let%test _ =
+ *   let actual =
+ *     Fasta.In_channel.to_in_channel @@ Or_error.ok_exn
+ *     @@ Fasta.In_channel.stdin ()
+ *   in
+ *   let expected = In_channel.stdin in
+ *   In_channel.equal actual expected *)
 
-let%test _ =
-  let actual = Or_error.ok_exn @@ Fasta_in_channel.stdin () in
-  let expected = Fasta_in_channel.of_in_channel In_channel.stdin in
-  Fasta_in_channel.equal actual expected
+(* let%test _ =
+ *   let actual = Fasta.In_channel.stdin in
+ *   let expected = Fasta.In_channel.of_in_channel In_channel.stdin in
+ *   Fasta.In_channel.equal actual expected *)
 
 let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.seqs in
   let expected =
     Or_error.ok_exn
-    @@ Fasta_in_channel.with_file name ~f:(fun chan ->
-           let record = Or_error.ok_exn @@ Fasta_in_channel.input_record chan in
+    @@ Fasta.In_channel.with_file name ~f:(fun chan ->
+           let record = Or_error.ok_exn @@ Fasta.In_channel.input_record chan in
            (* For some reason the type inference is weird with
               Option.value_exn *)
-           Fasta_record.serialize @@ Option.value_exn record)
+           Fasta.Record.serialize @@ Option.value_exn record)
   in
   print_endline expected;
   [%expect {| ((id s1) (desc (apple)) (seq ACTGn)) |}]
@@ -81,8 +81,8 @@ let%expect_test _ =
 let%expect_test "simple fold" =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.seqs in
   let actual =
-    Fasta_in_channel.with_file_fold_records name ~init:"" ~f:(fun acc record ->
-        acc ^ Fasta_record.to_string_nl record)
+    Fasta.In_channel.with_file_fold_records name ~init:"" ~f:(fun acc record ->
+        acc ^ Fasta.Record.to_string_nl record)
   in
   print_endline (Or_error.ok_exn actual);
   [%expect {|
@@ -95,8 +95,8 @@ actgn
 let%expect_test "tricky fold" =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.tricky_seqs in
   let actual =
-    Fasta_in_channel.with_file_fold_records name ~init:"" ~f:(fun acc record ->
-        acc ^ Fasta_record.to_string_nl record ~nl:"\n")
+    Fasta.In_channel.with_file_fold_records name ~init:"" ~f:(fun acc record ->
+        acc ^ Fasta.Record.to_string_nl record ~nl:"\n")
   in
   print_endline (Or_error.ok_exn actual);
   [%expect
@@ -122,9 +122,9 @@ actG
 
 let%expect_test "simple with_file_records_exn" =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.seqs in
-  let actual = Fasta_in_channel.with_file_records name in
+  let actual = Fasta.In_channel.with_file_records name in
   print_endline
-    (Sexp.to_string_hum ([%sexp_of: Fasta_record.t List.t Or_error.t] actual));
+    (Sexp.to_string_hum ([%sexp_of: Fasta.Record.t List.t Or_error.t] actual));
   [%expect
     {|
 (Ok
@@ -133,10 +133,10 @@ let%expect_test "simple with_file_records_exn" =
 
 let%expect_test "tricky with_file_records_exn" =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.tricky_seqs in
-  let actual = Fasta_in_channel.with_file_records name in
+  let actual = Fasta.In_channel.with_file_records name in
   print_endline
     (Sexp.to_string_hum ~indent:1
-       ([%sexp_of: Fasta_record.t List.t Or_error.t] actual));
+       ([%sexp_of: Fasta.Record.t List.t Or_error.t] actual));
   [%expect
     {|
 (Ok
@@ -155,12 +155,12 @@ let%expect_test "tricky with_file_records_exn" =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.tricky_seqs in
   let actual =
     Or_error.ok_exn
-    @@ Fasta_in_channel.with_file name ~f:(fun chan ->
-           Fasta_in_channel.records chan)
+    @@ Fasta.In_channel.with_file name ~f:(fun chan ->
+           Fasta.In_channel.records chan)
   in
   print_endline
     (Sexp.to_string_hum ~indent:1
-       ([%sexp_of: Fasta_record.t List.t Or_error.t] actual));
+       ([%sexp_of: Fasta.Record.t List.t Or_error.t] actual));
   [%expect
     {|
 (Ok
@@ -179,11 +179,11 @@ let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.tricky_seqs in
   let result =
     Or_error.ok_exn
-    @@ Fasta_in_channel.with_file name ~f:(fun chan ->
+    @@ Fasta.In_channel.with_file name ~f:(fun chan ->
            Or_error.ok_exn
-           @@ Fasta_in_channel.fold_records chan ~init:""
+           @@ Fasta.In_channel.fold_records chan ~init:""
                 ~f:(fun result record ->
-                  result ^ sprintf "%s\n" (Fasta_record.serialize record)))
+                  result ^ sprintf "%s\n" (Fasta.Record.serialize record)))
   in
   print_endline result;
   [%expect
@@ -204,9 +204,9 @@ let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.tricky_seqs in
   let result =
     Or_error.ok_exn
-    @@ Fasta_in_channel.with_file_fold_records name ~init:""
+    @@ Fasta.In_channel.with_file_fold_records name ~init:""
          ~f:(fun result record ->
-           result ^ sprintf "%s\n" (Fasta_record.serialize record))
+           result ^ sprintf "%s\n" (Fasta.Record.serialize record))
   in
   print_endline result;
   [%expect
@@ -227,8 +227,8 @@ let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.tricky_seqs in
   let _ =
     Or_error.ok_exn
-    @@ Fasta_in_channel.with_file_iter_records name ~f:(fun record ->
-           print_endline (Fasta_record.serialize record))
+    @@ Fasta.In_channel.with_file_iter_records name ~f:(fun record ->
+           print_endline (Fasta.Record.serialize record))
   in
   [%expect
     {|
@@ -248,10 +248,10 @@ let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.tricky_seqs in
   let _ =
     Or_error.ok_exn
-    @@ Fasta_in_channel.with_file name ~f:(fun chan ->
+    @@ Fasta.In_channel.with_file name ~f:(fun chan ->
            Or_error.ok_exn
-           @@ Fasta_in_channel.iter_records chan ~f:(fun record ->
-                  print_endline (Fasta_record.serialize record)))
+           @@ Fasta.In_channel.iter_records chan ~f:(fun record ->
+                  print_endline (Fasta.Record.serialize record)))
   in
   [%expect
     {|
@@ -271,9 +271,9 @@ let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.tricky_seqs in
   let result =
     Or_error.ok_exn
-    @@ Fasta_in_channel.with_file_foldi_records name ~init:""
+    @@ Fasta.In_channel.with_file_foldi_records name ~init:""
          ~f:(fun i result record ->
-           result ^ sprintf "%d -- %s\n" i (Fasta_record.serialize record))
+           result ^ sprintf "%d -- %s\n" i (Fasta.Record.serialize record))
   in
   print_endline result;
   [%expect
@@ -294,12 +294,12 @@ let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.tricky_seqs in
   let result =
     Or_error.ok_exn
-    @@ Fasta_in_channel.with_file name ~f:(fun chan ->
+    @@ Fasta.In_channel.with_file name ~f:(fun chan ->
            Or_error.ok_exn
-           @@ Fasta_in_channel.foldi_records chan ~init:""
+           @@ Fasta.In_channel.foldi_records chan ~init:""
                 ~f:(fun i result record ->
                   result
-                  ^ sprintf "%d -- %s\n" i (Fasta_record.serialize record)))
+                  ^ sprintf "%d -- %s\n" i (Fasta.Record.serialize record)))
   in
   print_endline result;
   [%expect
@@ -320,8 +320,8 @@ let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.tricky_seqs in
   let _ =
     Or_error.ok_exn
-    @@ Fasta_in_channel.with_file_iteri_records name ~f:(fun i record ->
-           printf "%d -- %s\n" i (Fasta_record.serialize record))
+    @@ Fasta.In_channel.with_file_iteri_records name ~f:(fun i record ->
+           printf "%d -- %s\n" i (Fasta.Record.serialize record))
   in
   [%expect
     {|
@@ -341,10 +341,10 @@ let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.tricky_seqs in
   let _ =
     Or_error.ok_exn
-    @@ Fasta_in_channel.with_file name ~f:(fun chan ->
+    @@ Fasta.In_channel.with_file name ~f:(fun chan ->
            Or_error.ok_exn
-           @@ Fasta_in_channel.iteri_records chan ~f:(fun i record ->
-                  printf "%d -- %s\n" i (Fasta_record.serialize record)))
+           @@ Fasta.In_channel.iteri_records chan ~f:(fun i record ->
+                  printf "%d -- %s\n" i (Fasta.Record.serialize record)))
   in
   [%expect
     {|
@@ -365,28 +365,27 @@ let%expect_test _ =
 let print_record_list lst =
   print_endline
     (Sexp.to_string_hum ~indent:1
-       ([%sexp_of: Fasta_record.t list Or_error.t] lst))
+       ([%sexp_of: Fasta.Record.t list Or_error.t] lst))
 
 let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.bad_file in
-  let actual = Fasta_in_channel.with_file_records name in
+  let actual = Fasta.In_channel.with_file_records name in
   print_endline
   @@ Sexp.to_string_hum ~indent:1
-       ([%sexp_of: Fasta_record.t List.t Or_error.t] actual);
+       ([%sexp_of: Fasta.Record.t List.t Or_error.t] actual);
   [%expect
     {|
     (Error
      ("Caught exception"
-      (src/fasta_in_channel.ml.Exn
-       "Not at a header line, but not currently in a sequence")))
+      (Failure "Not at a header line, but not currently in a sequence")))
 
   |}]
 
 let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.bad_file in
   let actual =
-    Fasta_in_channel.with_file_fold_records name ~init:"" ~f:(fun _acc record ->
-        Fasta_record.to_string record)
+    Fasta.In_channel.with_file_fold_records name ~init:"" ~f:(fun _acc record ->
+        Fasta.Record.to_string record)
   in
   print_endline
   @@ Sexp.to_string_hum ~indent:1 ([%sexp_of: String.t Or_error.t] actual);
@@ -394,8 +393,7 @@ let%expect_test _ =
     {|
     (Error
      ("Caught exception"
-      (src/fasta_in_channel.ml.Exn
-       "Not at a header line, but not currently in a sequence")))
+      (Failure "Not at a header line, but not currently in a sequence")))
 
 
   |}]
@@ -405,24 +403,54 @@ let%expect_test _ =
 let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.seqs in
   let () =
-    Fasta_in_channel.with_file_exn name ~f:(fun chan ->
-        Fasta_in_channel.record_sequence_exn chan
+    Fasta.In_channel.with_file_exn name ~f:(fun chan ->
+        Fasta.In_channel.record_sequence_exn chan
         (* Add sequence index to record description *)
         |> Sequence.mapi ~f:(fun i record ->
                let new_desc =
-                 match Fasta_record.desc record with
+                 match Fasta.Record.desc record with
                  | None -> Some (sprintf "sequence %d" i)
                  | Some old_desc ->
                      Some (sprintf "%s -- sequence %d" old_desc i)
                in
-               Fasta_record.with_desc new_desc record)
+               Fasta.Record.with_desc new_desc record)
         (* Convert all sequence chars to lowercase *)
         |> Sequence.map ~f:(fun record ->
-               let new_seq = String.lowercase (Fasta_record.seq record) in
-               Fasta_record.with_seq new_seq record)
+               let new_seq = String.lowercase (Fasta.Record.seq record) in
+               Fasta.Record.with_seq new_seq record)
         (* Print sequences *)
         |> Sequence.iter ~f:(fun record ->
-               print_endline @@ Fasta_record.serialize record))
+               print_endline @@ Fasta.Record.serialize record))
+  in
+  [%expect
+    {|
+    ((id s1) (desc ("apple -- sequence 0")) (seq actgn))
+    ((id s2) (desc ("pie -- sequence 1")) (seq actgn))
+
+  |}]
+
+let%expect_test _ =
+  let name, _chan = write_tmp_file Test_fasta_in_channel_data.seqs in
+  let () =
+    Fasta.In_channel.with_file_exn name ~f:(fun chan ->
+        Fasta.In_channel.record_sequence chan
+        (* Add sequence index to record description *)
+        |> Sequence.mapi ~f:(fun i record ->
+               let record = Or_error.ok_exn record in
+               let new_desc =
+                 match Fasta.Record.desc record with
+                 | None -> Some (sprintf "sequence %d" i)
+                 | Some old_desc ->
+                     Some (sprintf "%s -- sequence %d" old_desc i)
+               in
+               Fasta.Record.with_desc new_desc record)
+        (* Convert all sequence chars to lowercase *)
+        |> Sequence.map ~f:(fun record ->
+               let new_seq = String.lowercase (Fasta.Record.seq record) in
+               Fasta.Record.with_seq new_seq record)
+        (* Print sequences *)
+        |> Sequence.iter ~f:(fun record ->
+               print_endline @@ Fasta.Record.serialize record))
   in
   [%expect
     {|
@@ -436,25 +464,25 @@ let%expect_test _ =
 let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.seqs in
   let result =
-    Fasta_in_channel.with_file name ~f:(fun chan ->
-        Fasta_in_channel.record_sequence_exn chan
+    Fasta.In_channel.with_file name ~f:(fun chan ->
+        Fasta.In_channel.record_sequence_exn chan
         (* Add sequence index to record description *)
         |> Sequence.mapi ~f:(fun i record ->
                if i = 1 then raise_notrace Exit;
                let new_desc =
-                 match Fasta_record.desc record with
+                 match Fasta.Record.desc record with
                  | None -> Some (sprintf "sequence %d" i)
                  | Some old_desc ->
                      Some (sprintf "%s -- sequence %d" old_desc i)
                in
-               Fasta_record.with_desc new_desc record)
+               Fasta.Record.with_desc new_desc record)
         (* Convert all sequence chars to lowercase *)
         |> Sequence.map ~f:(fun record ->
-               let new_seq = String.lowercase (Fasta_record.seq record) in
-               Fasta_record.with_seq new_seq record)
+               let new_seq = String.lowercase (Fasta.Record.seq record) in
+               Fasta.Record.with_seq new_seq record)
         (* Print sequences *)
         |> Sequence.iter ~f:(fun record ->
-               print_endline @@ Fasta_record.serialize record))
+               print_endline @@ Fasta.Record.serialize record))
   in
   print_endline
   @@ Sexp.to_string_hum ~indent:1 ([%sexp_of: unit Or_error.t] result);
@@ -468,15 +496,15 @@ let%expect_test _ =
 let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.seqs in
   let total_length =
-    Fasta_in_channel.with_file name ~f:(fun chan ->
-        Fasta_in_channel.record_sequence_exn chan
+    Fasta.In_channel.with_file name ~f:(fun chan ->
+        Fasta.In_channel.record_sequence_exn chan
         (* Blow up pipeline on second sequence. *)
         |> Sequence.mapi ~f:(fun i record ->
                if i = 1 then raise_notrace Exit;
                record)
         (* Print sequences *)
         |> Sequence.fold ~init:0 ~f:(fun length record ->
-               length + String.length (Fasta_record.seq record)))
+               length + String.length (Fasta.Record.seq record)))
   in
   print_endline
   @@ Sexp.to_string_hum ~indent:1 ([%sexp_of: int Or_error.t] total_length);
@@ -490,10 +518,10 @@ let%expect_test _ =
 let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.bad_file in
   let actual =
-    Fasta_in_channel.with_file name ~f:(fun chan ->
-        Fasta_in_channel.record_sequence chan
+    Fasta.In_channel.with_file name ~f:(fun chan ->
+        Fasta.In_channel.record_sequence chan
         |> Sequence.iter ~f:(fun record ->
-               print_endline @@ Fasta_record.serialize @@ Or_error.ok_exn record))
+               print_endline @@ Fasta.Record.serialize @@ Or_error.ok_exn record))
   in
   print_endline
   @@ Sexp.to_string_hum ~indent:1 ([%sexp_of: unit Or_error.t] actual);
@@ -502,18 +530,17 @@ let%expect_test _ =
     (Error
      ("Caught exception"
       ("Caught exception"
-       (src/fasta_in_channel.ml.Exn
-        "Not at a header line, but not currently in a sequence"))))
+       (Failure "Not at a header line, but not currently in a sequence"))))
 
   |}]
 
 let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.bad_file in
   let actual =
-    Fasta_in_channel.with_file name ~f:(fun chan ->
-        Fasta_in_channel.record_sequence_exn chan
+    Fasta.In_channel.with_file name ~f:(fun chan ->
+        Fasta.In_channel.record_sequence_exn chan
         |> Sequence.iter ~f:(fun record ->
-               print_endline @@ Fasta_record.serialize @@ record))
+               print_endline @@ Fasta.Record.serialize @@ record))
   in
   print_endline
   @@ Sexp.to_string_hum ~indent:1 ([%sexp_of: unit Or_error.t] actual);
@@ -521,16 +548,15 @@ let%expect_test _ =
     {|
     (Error
      ("Caught exception"
-      (src/fasta_in_channel.ml.Exn
-       "Not at a header line, but not currently in a sequence")))
+      (Failure "Not at a header line, but not currently in a sequence")))
 
   |}]
 
 let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.all_carets in
   let () =
-    Fasta_in_channel.with_file_iteri_records_exn name ~f:(fun i record ->
-        print_endline @@ sprintf "%d -- %s" i (Fasta_record.serialize record))
+    Fasta.In_channel.with_file_iteri_records_exn name ~f:(fun i record ->
+        print_endline @@ sprintf "%d -- %s" i (Fasta.Record.serialize record))
   in
   [%expect
     {|
@@ -547,13 +573,13 @@ let%expect_test _ =
 let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.seqs in
   let records =
-    match Fasta_in_channel.with_file_records name with
+    match Fasta.In_channel.with_file_records name with
     | Error err ->
         eprintf "Problem reading records: %s\n" (Error.to_string_hum err);
         exit 1
     | Ok records -> records
   in
-  print_endline (Sexp.to_string_hum ([%sexp_of: Fasta_record.t List.t] records));
+  print_endline (Sexp.to_string_hum ([%sexp_of: Fasta.Record.t List.t] records));
   [%expect
     {| (((id s1) (desc (apple)) (seq ACTGn)) ((id s2) (desc (pie)) (seq actgn))) |}]
 
@@ -561,9 +587,9 @@ let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.seqs in
   let total_length =
     match
-      Fasta_in_channel.with_file_fold_records name ~init:0
+      Fasta.In_channel.with_file_fold_records name ~init:0
         ~f:(fun length record ->
-          length + String.length (Fasta_record.seq record))
+          length + String.length (Fasta.Record.seq record))
     with
     | Error err ->
         eprintf "Problem reading records: %s\n" (Error.to_string_hum err);
@@ -578,23 +604,22 @@ let%expect_test _ =
   let name, _chan =
     write_tmp_file Test_fasta_in_channel_data.weird_blank_lines
   in
-  let records = Fasta_in_channel.with_file_records name in
+  let records = Fasta.In_channel.with_file_records name in
   print_endline
-    (Sexp.to_string_hum ([%sexp_of: Fasta_record.t List.t Or_error.t] records));
+    (Sexp.to_string_hum ([%sexp_of: Fasta.Record.t List.t Or_error.t] records));
   [%expect
     {|
     (Error
      ("Caught exception"
-      (src/fasta_in_channel.ml.Exn
-       "Not at a header line, but not currently in a sequence"))) |}]
+      (Failure "Not at a header line, but not currently in a sequence"))) |}]
 
 (* Empty header lines. *)
 let%expect_test _ =
   let name, _chan =
     write_tmp_file Test_fasta_in_channel_data.empty_header_lines
   in
-  let records = Fasta_in_channel.with_file_records name in
+  let records = Fasta.In_channel.with_file_records name in
   print_endline
-    (Sexp.to_string_hum ([%sexp_of: Fasta_record.t List.t Or_error.t] records));
+    (Sexp.to_string_hum ([%sexp_of: Fasta.Record.t List.t Or_error.t] records));
   [%expect
     {| (Ok (((id "") (desc ()) (seq ACTG)) ((id "") (desc ()) (seq actg)))) |}]
