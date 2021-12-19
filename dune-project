@@ -22,6 +22,7 @@
   (base (>= "v0.12"))
   (ocaml (>= "4.08.0"))
   (ppx_compare (>= "v0.12"))
+  (ppx_fields_conv (>= "v0.12"))
   (ppx_sexp_conv (>= "v0.12"))
   (stdio (>= "v0.12"))
   ; Test-only dependencies
