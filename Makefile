@@ -3,8 +3,11 @@ BENCH_D = bench
 DOCS_D = _docs
 TEST_COV_D = /tmp/bio_io
 
+.PHONY: all
+all: build install
+
 .PHONY: bench
-bench: bench_fasta bench_fasta_exe
+bench: bench_io bench_fasta bench_fasta_exe
 
 .PHONY: bench_fasta
 bench_fasta:
@@ -17,6 +20,12 @@ bench_fasta_exe:
 	dune build --profile=release && \
 	  BENCH_FASTA_INFILE=$(BENCH_D)/seqs.10000.faa \
 	  hyperfine -w 30 './_build/default/bench/bench_fasta_exe.exe 2> /dev/null'
+
+.PHONY: bench_io
+bench_io:
+	dune build --profile=release && \
+	  BENCH_IO_INFILE=$(BENCH_D)/seqs.10000.faa \
+	  dune exec ./bench/bench_io.exe 2> /dev/null
 
 .PHONY: build
 build:
