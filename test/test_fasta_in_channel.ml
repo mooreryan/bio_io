@@ -52,19 +52,6 @@ let%expect_test _ =
   print_endline @@ Sexp.to_string_hum ([%sexp_of: unit] closed);
   [%expect {| () |}]
 
-(* let%test _ =
- *   let actual =
- *     Fasta.In_channel.to_in_channel @@ Or_error.ok_exn
- *     @@ Fasta.In_channel.stdin ()
- *   in
- *   let expected = In_channel.stdin in
- *   In_channel.equal actual expected *)
-
-(* let%test _ =
- *   let actual = Fasta.In_channel.stdin in
- *   let expected = Fasta.In_channel.of_in_channel In_channel.stdin in
- *   Fasta.In_channel.equal actual expected *)
-
 let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.seqs in
   let expected =

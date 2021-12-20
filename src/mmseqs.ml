@@ -62,8 +62,7 @@ end = struct
 
     type record = Record.t
 
-    let input_record_exn ic =
-      Option.map ~f:Record.of_string @@ Stdio.In_channel.input_line ic
+    let input_record_exn ic = Option.map ~f:Record.of_string @@ input_line ic
   end
 
   include T

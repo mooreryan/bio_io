@@ -2,8 +2,16 @@ let seqs = {eof|>s1 apple
 ACTG
 n
 >s2 pie
-actg
+a
+
+c
+
+t
+
+g
+
 n
+
 |eof}
 
 let all_carets = {eof|>

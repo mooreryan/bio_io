@@ -121,31 +121,25 @@ end = struct
   let create ~id ~desc ~seq = { id; desc; seq }
 
   let of_header_exn s =
-    match String.is_prefix s ~prefix:">" with
-    | false ->
-        let msg =
-          Printf.sprintf "Header line should start with '>'.  Got: '%s'"
-            (String.prefix s 0)
-        in
-        failwith msg
-    | true -> (
-        match
-          s |> String.strip
-          |> String.chop_prefix_exn ~prefix:">"
-          |> String.split ~on:' '
-        with
-        (* Empty header lines get id = "" *)
-        | [ id ] -> { id; desc = None; seq = "" }
-        | id :: desc ->
-            { id; desc = Some (String.concat ~sep:" " desc); seq = "" }
-        | [] ->
-            (* String.split should at least give [""]. Should never get here. *)
-            assert false)
+    if String.is_prefix s ~prefix:">" then
+      match
+        String.split ~on:' '
+        @@ String.chop_prefix_exn ~prefix:">"
+        @@ String.strip s
+      with
+      (* Empty header lines get id = "" *)
+      | [ id ] -> { id; desc = None; seq = "" }
+      | id :: desc ->
+          { id; desc = Some (String.concat ~sep:" " desc); seq = "" }
+      | [] ->
+          (* String.split should at least give [""]. Should never get here. *)
+          assert false
+    else
+      failwith
+      @@ Printf.sprintf "Header line should start with '>'.  Got: '%s'"
+      @@ String.prefix s 0
 
-  let of_header s =
-    match of_header_exn s with
-    | exception exn -> Or_error.error "Caught exception" exn Exn.sexp_of_t
-    | result -> Or_error.return result
+  let of_header s = Utils.try1 of_header_exn s
 
   let to_string r =
     match r.desc with
@@ -157,10 +151,9 @@ end = struct
   let serialize r = Sexp.to_string_hum (sexp_of_t r)
 
   let equal r1 r2 =
-    let opt_equal = Option.equal String.equal in
     String.(r1.id = r2.id)
     && String.(r1.seq = r2.seq)
-    && opt_equal r1.desc r2.desc
+    && Option.equal String.equal r1.desc r2.desc
 
   let ( = ) = equal
 
