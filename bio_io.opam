@@ -27,6 +27,7 @@ depends: [
   "core_bench" {>= "v0.12" & dev}
   "odoc" {with-doc}
 ]
+dev-repo: "git+https://github.com/mooreryan/bio_io.git"
 build: [
   ["dune" "subst"] {dev}
   [
@@ -37,8 +38,7 @@ build: [
     "-j"
     jobs
     "@install"
-    "@runtest" {with-test}
+    "@runtest" {with-test & arch != "x86_32"}
     "@doc" {with-doc}
   ]
 ]
-dev-repo: "git+https://github.com/mooreryan/bio_io.git"
