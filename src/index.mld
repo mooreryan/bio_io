@@ -27,12 +27,26 @@ Licensed under the Apache License, Version 2.0 or the MIT license, at
 your option. This program may not be copied, modified, or distributed
 except according to those terms.
 
-{1 Modules}
+{1 Overview}
 
-These are the main modules of [Bio_io].  API docs and examples can be
-found on the respective pages.
+The [Bio_io] library provides input channels that return records.
 
-- {{!Bio_io.Cigar} Cigar}: module for parsing CIGAR strings.
-- {{!Bio_io.Fasta_in_channel} Fasta_in_channel}: an input channel for
-  reading FASTA files
-- {{!Bio_io.Fasta_record} Fasta_record}: a record type for FASTA files
+For an overview see the [Record_in_channel.S] module signature.  In
+fact, all the [In_channels] in this library satisfy this signature.
+
+The [Fasta] module provides a [Record] and [In_channel] for reading
+FASTA files.
+
+There are modules for reading "delimited" files like those output by
+[Btab] and [Mmseqs].
+
+{1 Extending Bio_io}
+
+The [Record_in_channel.Make] functor can be used to make new
+specialized [Record_in_chnanels].  To do so, you need a module that
+satisfies the [Record_in_channel.In_channel_input_record] signature.
+[Bio_io] has a couple of In_channel types in the [Private] module you
+can use for this, and then add in the [input_record_exn] function.
+
+For examples of this, see the definitions of [Fasta.In_channel] and
+[Mmseqs.In_channel].

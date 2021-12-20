@@ -17,8 +17,8 @@ open! Base
     Then you would get a [record] something like this:
 
     {[
-      Fasta_record.id record (* "s1" *) Fasta_record.desc record
-        (* Some "apple pie" *) Fasta_record.seq record
+      Fasta.Record.id record (* "s1" *) Fasta.Record.desc record
+        (* Some "apple pie" *) Fasta.Record.seq record
       (* "ACTGactg" *)
     ]}
 
@@ -35,16 +35,16 @@ open! Base
     Then you would get a [record] something like this:
 
     {[
-      Fasta_record.id record (* "s1" *) Fasta_record.desc record (* None *)
-        Fasta_record.seq record
+      Fasta.Record.id record (* "s1" *) Fasta.Record.desc record (* None *)
+        Fasta.Record.seq record
       (* "ACTGactg" *)
     ]}
 
     {2 Example 3}
 
-    To change a part of the [Fasta_record] use the [with_*] functions. E.g.,
+    To change a part of the [Fasta.Record] use the [with_*] functions. E.g.,
 
-    {[ Fasta_record.with_id "apple" record ]}
+    {[ Fasta.Record.with_id "apple" record ]}
 
     would change give you a [t] with the [id] set to ["apple"]. *)
 module Record : sig
@@ -81,7 +81,7 @@ module Record : sig
   (** [equal this other] returns [true] if all fields of two [t]s are the same. *)
 
   val ( = ) : t -> t -> bool
-  (** [Fasta_record.(this = other)] is like [equal this other]. *)
+  (** [Fasta.Record.(this = other)] is like [equal this other]. *)
 
   val id : t -> string
   (** [id t] returns the [id] of the [t]. *)
@@ -100,8 +100,8 @@ module Record : sig
       the length. E.g.,
 
       {[
-        let r = Fasta_record.create ~id:"apple" ~desc:None ~seq:"a a" in
-        assert (Int.(3 = Fasta_record.seq_length r))
+        let r = Fasta.Record.create ~id:"apple" ~desc:None ~seq:"a a" in
+        assert (Int.(3 = Fasta.Record.seq_length r))
       ]} *)
 
   val with_id : string -> t -> t
@@ -174,6 +174,151 @@ end = struct
   let with_desc desc r = { r with desc }
 end
 
+(** [In_channel] for FASTA records. For more general info, see the
+    [Record_in_channel] module mli file.
+
+    {1:examples Examples}
+
+    {2 Return all records in a list}
+
+    Simplest way. May raise exceptions.
+
+    {[ let records = Fasta.In_channel.with_file_records_exn fname ]}
+
+    A bit more involved, but you won't get exceptions. Instead, you have to
+    handle the [Or_error.t].
+
+    {[
+      let records =
+        match Fasta.In_channel.with_file_records name with
+        | Error err ->
+            eprintf "Problem reading records: %s\n" (Error.to_string_hum err);
+            exit 1
+        | Ok records -> records
+    ]}
+
+    {2 Iterating over records}
+
+    Use the [iter] functions when you need to go over each record and perform
+    some side-effects with them.
+
+    Print sequence IDs and sequence lengths
+
+    {[
+      let () =
+        Fasta.In_channel.with_file_iter_records_exn "sequences.fasta"
+          ~f:(fun record ->
+            let open Fasta.Record in
+            printf "%s => %d\n" (id record) (seq_length record))
+    ]}
+
+    Print sequence index, IDs, and sequence lengths.
+
+    This is like the last example except that we also want to print the index.
+    The first record is 0, the 2nd is 1, etc.
+
+    {[
+      let () =
+        Fasta.In_channel.with_file_iteri_records_exn "sequences.fasta"
+          ~f:(fun index record ->
+            let open Fasta.Record in
+            printf "%d: %s => %d\n" (index + 1) (id record)
+              (seq_length record)
+    ]}
+
+    {2 Folding over records}
+
+    If you need to reduce all the records down to a single value, use the [fold]
+    functions.
+
+    Get total length of all sequences in the file.
+
+    Watch out as this may raise exceptions...see the [_exn] suffix.
+
+    {[
+      let total_length =
+        Fasta.In_channel.with_file_fold_records_exn "sequences.fasta" ~init:0
+          ~f:(fun length record -> length + Fasta.Record.seq_length record)
+    ]}
+
+    Same thing, but this won't raise exceptions. You do have to handle
+    [Or_error.t] to get the final value. Note that within the fold function, you
+    get [Fasta.Record.t] and not [Fasta.Record.t Or_error.t].
+
+    {[
+      let total_length =
+        match
+          Fasta.In_channel.with_file_fold_records name ~init:0
+            ~f:(fun length record -> length + Fasta.Record.seq_length record)
+        with
+        | Error err ->
+            eprintf "Problem reading records: %s\n" (Error.to_string_hum err);
+            exit 1
+        | Ok total_length -> total_length
+    ]}
+
+    {2:pipelines Pipelines with records}
+
+    Sometimes you have a "pipeline" of computations that you need to do one
+    after the other on records. In that case, you could the [sequence]
+    functions. Here's a silly example.
+
+    {[
+      let () =
+        Fasta.In_channel.with_file_exn name ~f:(fun chan ->
+            Fasta.In_channel.record_sequence_exn chan
+            (* Add sequence index to record description *)
+            |> Sequence.mapi ~f:(fun i record ->
+                   let new_desc =
+                     match Fasta.Record.desc record with
+                     | None -> Some (sprintf "sequence %d" i)
+                     | Some old_desc ->
+                         Some (sprintf "%s -- sequence %d" old_desc i)
+                   in
+                   Fasta.Record.with_desc new_desc record)
+            (* Convert all sequence chars to lowercase *)
+            |> Sequence.map ~f:(fun record ->
+                   let new_seq = String.lowercase (Fasta.Record.seq record) in
+                   Fasta.Record.with_seq new_seq record)
+            (* Print sequences *)
+            |> Sequence.iter ~f:(fun record ->
+                   print_endline @@ Fasta.Record.serialize record))
+    ]}
+
+    One thing to watch out for though...if you get an exception half way through
+    and you are running side-effecting code like we are here then part of your
+    side effects will have occured and part of them will {i not} have occured.
+
+    There are also [Or_error.t] flavors of the [sequence] functions. Just watch
+    out because these you actually {i do} have to deal with [Or_error.t] for
+    each [Fasta.Record.t] in the sequence.
+
+    As an alternative, you could use the [record_sequence_exn] function, but
+    wrap {i that} in the [with_file] function. That way you don't have to deal
+    with the [Or_error.t] inside your pipeline. Instead you deal with it at the
+    end.
+
+    {[
+      let total_length =
+        match
+          Fasta.In_channel.with_file name ~f:(fun chan ->
+              Fasta.In_channel.record_sequence_exn chan
+              (* Blow up pipeline on second sequence. *)
+              |> Sequence.mapi ~f:(fun i record ->
+                     if i = 1 then assert false;
+                     record)
+              |> Sequence.fold ~init:0 ~f:(fun length record ->
+                     length + String.length (Fasta.Record.seq record)))
+        with
+        | Error err ->
+            eprintf "Problem in parsing pipeline: %s\n"
+              (Error.to_string_hum err);
+            exit 1
+        | Ok total_length -> total_length
+    ]}
+
+    As you can see, if that fasta file has more than one sequence it will hit
+    the [assert false] and blow up. *)
 module In_channel : sig
   include Record_in_channel.S with type record := Record.t
 end = struct

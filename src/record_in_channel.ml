@@ -1,7 +1,5 @@
 open! Base
 
-(* TODO examples *)
-
 (** An input channel for reading (biological) records.
 
     {1 Overview}
@@ -221,8 +219,7 @@ module type S = sig
 end
 
 (** The basic in channel-like functions plus input_record function needed to
-    make a [Record_in_channel] module stuff you need plus the input record
-    function. TODO example. *)
+    make a [Record_in_channel] module. *)
 module type In_channel_input_record = sig
   type t
   type record
@@ -240,10 +237,9 @@ module type In_channel_input_record = sig
   val input_record_exn : t -> record option
 end
 
+(** Functor for making [Record_in_channel] modules. *)
 module Make (M : In_channel_input_record) :
   S with type t := M.t with type record := M.record = struct
-  (* exception Exn of string *)
-
   let equal = M.equal
 
   let stdin = M.stdin
