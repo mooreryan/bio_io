@@ -1,7 +1,33 @@
 open! Base
 
-(** Alternate interface to [Stdio.In_channel]. TODO compatible with the
-    signatures for the functors. *)
+(* Heavily influenced by Jane Street's Stdio.In_channel module. The license for
+   that code is the following:
+
+   The MIT License
+
+   Copyright (c) 2016--2021 Jane Street Group, LLC opensource@janestreet.com
+
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   copies of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE. *)
+
+(** Alternate interface to [Stdio.In_channel]. The [create] and [with_file]
+    functions don't have a [binary] option, so it is compatible with the
+    [Record_in_channel.Make] functor. *)
 module In_channel : sig
   include module type of Stdio.In_channel
 
@@ -63,8 +89,6 @@ module Peekable_in_channel : sig
   val peek_char : ?fix_win_eol:bool -> t -> char option
   val peek_line : ?fix_win_eol:bool -> t -> string option
 end = struct
-  (* TODO license of in_channel *)
-
   (* TODO let user set newline. *)
 
   (* Note that the buf is a line, and the input_line functions remove the
