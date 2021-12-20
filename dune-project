@@ -8,7 +8,7 @@
 
 (package
  (name bio_io)
- (version 0.4.0-preview)
+ (version 0.4.0)
  (license "MIT")
  (maintainers "Ryan Moore")
  (authors "Ryan Moore")

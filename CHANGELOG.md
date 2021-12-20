@@ -1,5 +1,22 @@
 ## Unreleased
 
+## 0.4.0 (2021-12-19)
+
+### Fixed
+
+- [Fasta.In_channel] can now read from fifos...e.g., you can pipe the output of `gunzip -c`directly into a program using the fasta parser and it will be okay.
+
+### Added
+
+- Added modules for MMseqs2 and BLAST (e.g., BLAST 6 tab-delimited output)
+- Added a couple of example programs in the `examples` directory
+
+### Changed
+
+- `Fasta_in_channel` is now `Fasta.In_channel` (breaking change)
+- `Fasta_record` is now `Fasta.Record`  (breaking change)
+- Various non-breaking changes
+
 ## 0.3.0 (2021-09-26)
 
 - Add `Cigar` module for parsing CIGAR strings.
