@@ -5,7 +5,7 @@ synopsis:
   "A library for reading and writing common file formats used in bioinformatics like FASTA files"
 maintainer: ["Ryan Moore"]
 authors: ["Ryan Moore"]
-license: "MIT"
+license: "MIT OR Apache-2.0"
 homepage: "https://github.com/mooreryan/bio_io"
 doc: "https://mooreryan.github.io/bio_io/"
 bug-reports: "https://github.com/mooreryan/bio_io/issues"
