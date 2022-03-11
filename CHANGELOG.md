@@ -1,6 +1,14 @@
 ## Unreleased
 
+### Added
+
+- Add `Btab_queries` module to process Btab files query-by-query rather than hit-by-hit
+
+### Changed
+
 - Update `ocamlformat` to `0.20.1`
+- Drop the `Mmseqs` module (breaking change)
+- Change record names in the `Btab` module (breaking change)
 
 ## 0.4.0 (2021-12-19)
 

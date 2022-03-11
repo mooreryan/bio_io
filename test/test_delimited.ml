@@ -26,50 +26,74 @@ let write_tmp_file data =
 
 let print_string_s s = Stdio.print_s @@ String.sexp_of_t s
 
-let%expect_test _ =
-  let records = Mmseqs.In_channel.with_file_records "test_files/bad_btab.tsv" in
-  print_s @@ [%sexp_of: Mmseqs.Record.t list Or_error.t] @@ records;
-  [%expect {| (Error ("Caught exception" (Failure "Bad input"))) |}]
-
-let%expect_test _ =
+let%expect_test "bad Btab" =
   let records = Btab.In_channel.with_file_records "test_files/bad_btab.tsv" in
   print_s @@ [%sexp_of: Btab.Record.t list Or_error.t] @@ records;
   [%expect {| (Error ("Caught exception" (Failure "Bad input"))) |}]
 
-let%expect_test _ =
-  let records = Mmseqs.In_channel.with_file_records_exn "test_files/btab.tsv" in
-  print_s @@ [%sexp_of: Mmseqs.Record.t list] @@ records;
-  [%expect
-    {|
-    (((query "Q 1") (target q1t1) (fident 0.1) (alnlen 2) (mismatch 3)
-      (gapopen 4) (qstart 5) (qend 6) (tstart 7) (tend 8) (evalue 9.99E-05)
-      (bits 10))
-     ((query "Q 1") (target q1t2) (fident 0.11) (alnlen 12) (mismatch 13)
-      (gapopen 14) (qstart 15) (qend 16) (tstart 17) (tend 18) (evalue 1.9E-05)
-      (bits 20))
-     ((query Q_2) (target q2t1) (fident 0.21) (alnlen 22) (mismatch 23)
-      (gapopen 24) (qstart 25) (qend 26) (tstart 27) (tend 28) (evalue 2.9E-05)
-      (bits 30))) |}]
+let%expect_test "bad Btab.queries" =
+  let records =
+    Btab_queries.In_channel.with_file_records "test_files/bad_btab.tsv"
+  in
+  print_s @@ [%sexp_of: Btab_queries.Record.t list Or_error.t] @@ records;
+  [%expect {| (Error ("Caught exception" (Failure "Bad input"))) |}]
 
 let%expect_test _ =
   let records = Btab.In_channel.with_file_records_exn "test_files/btab.tsv" in
   print_s @@ [%sexp_of: Btab.Record.t list] @@ records;
   [%expect
     {|
-    (((qaccver "Q 1") (saccver q1t1) (pident 0.1) (length 2) (mismatch 3)
-      (gapopen 4) (qstart 5) (qend 6) (sstart 7) (send 8) (evalue 9.99E-05)
-      (bitscore 10))
-     ((qaccver "Q 1") (saccver q1t2) (pident 0.11) (length 12) (mismatch 13)
-      (gapopen 14) (qstart 15) (qend 16) (sstart 17) (send 18) (evalue 1.9E-05)
-      (bitscore 20))
-     ((qaccver Q_2) (saccver q2t1) (pident 0.21) (length 22) (mismatch 23)
-      (gapopen 24) (qstart 25) (qend 26) (sstart 27) (send 28) (evalue 2.9E-05)
-      (bitscore 30))) |}]
+    (((query "Q 1") (target q1t1) (pident 0.1) (alnlen 2) (mismatch 3)
+      (gapopen 4) (qstart 5) (qend 6) (tstart 7) (tend 8) (evalue 9.99E-05)
+      (bits 10))
+     ((query "Q 1") (target q1t2) (pident 0.11) (alnlen 12) (mismatch 13)
+      (gapopen 14) (qstart 15) (qend 16) (tstart 17) (tend 18) (evalue 1.9E-05)
+      (bits 20))
+     ((query Q_2) (target q2t1) (pident 0.21) (alnlen 22) (mismatch 23)
+      (gapopen 24) (qstart 25) (qend 26) (tstart 27) (tend 28) (evalue 2.9E-05)
+      (bits 30))) |}]
 
-let%expect_test "incomplete row" =
-  let records = Or_error.try_with (fun () -> Mmseqs.Record.of_string "apple") in
-  print_s @@ [%sexp_of: Mmseqs.Record.t Or_error.t] records;
-  [%expect {| (Error (Failure "Bad input")) |}]
+let%expect_test _ =
+  let records =
+    Btab_queries.In_channel.with_file_records_exn "test_files/btab.tsv"
+  in
+  print_s @@ [%sexp_of: Btab_queries.Record.t list] @@ records;
+  [%expect
+    {|
+    (((query "Q 1")
+      (hits
+       (((query "Q 1") (target q1t1) (pident 0.1) (alnlen 2) (mismatch 3)
+         (gapopen 4) (qstart 5) (qend 6) (tstart 7) (tend 8) (evalue 9.99E-05)
+         (bits 10))
+        ((query "Q 1") (target q1t2) (pident 0.11) (alnlen 12) (mismatch 13)
+         (gapopen 14) (qstart 15) (qend 16) (tstart 17) (tend 18)
+         (evalue 1.9E-05) (bits 20)))))
+     ((query Q_2)
+      (hits
+       (((query Q_2) (target q2t1) (pident 0.21) (alnlen 22) (mismatch 23)
+         (gapopen 24) (qstart 25) (qend 26) (tstart 27) (tend 28)
+         (evalue 2.9E-05) (bits 30)))))) |}]
+
+let%expect_test _ =
+  Btab_queries.In_channel.with_file_iter_records_exn "test_files/btab.tsv"
+    ~f:(fun r ->
+      print_endline "===";
+      print_endline @@ Btab_queries.Record.query r;
+      print_s @@ [%sexp_of: Btab.Record.t list] @@ Btab_queries.Record.hits r);
+  [%expect {|
+    ===
+    Q 1
+    (((query "Q 1") (target q1t1) (pident 0.1) (alnlen 2) (mismatch 3)
+      (gapopen 4) (qstart 5) (qend 6) (tstart 7) (tend 8) (evalue 9.99E-05)
+      (bits 10))
+     ((query "Q 1") (target q1t2) (pident 0.11) (alnlen 12) (mismatch 13)
+      (gapopen 14) (qstart 15) (qend 16) (tstart 17) (tend 18) (evalue 1.9E-05)
+      (bits 20)))
+    ===
+    Q_2
+    (((query Q_2) (target q2t1) (pident 0.21) (alnlen 22) (mismatch 23)
+      (gapopen 24) (qstart 25) (qend 26) (tstart 27) (tend 28) (evalue 2.9E-05)
+      (bits 30))) |}]
 
 (* Property tests *)
 
@@ -120,14 +144,6 @@ let generate_valid_btab_with_len_line =
   Int.quickcheck_generator >>= fun tlen ->
   Q.Generator.return
   @@ String.concat ~sep:"\t" [ btab; Int.to_string qlen; Int.to_string tlen ]
-
-let%test_unit "Mmseqs.Record round tripping works" =
-  Q.test ~trials generate_valid_btab_line ~sexp_of:String.sexp_of_t
-    ~f:(fun btab_line ->
-      let parsed =
-        Mmseqs.Record.to_string @@ Mmseqs.Record.of_string btab_line
-      in
-      [%test_eq: string] parsed btab_line)
 
 let%test_unit "Blast_6_record round tripping works" =
   Q.test ~trials generate_valid_btab_line ~sexp_of:String.sexp_of_t
