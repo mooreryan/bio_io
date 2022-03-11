@@ -1,6 +1,5 @@
 open! Core_kernel
 open! Bio_io
-
 module Q = Quickcheck
 
 let trials =
@@ -75,6 +74,7 @@ let%expect_test "incomplete row" =
 (* Property tests *)
 
 let bad_stuff = Re2.create_exn "[\t\r\n]"
+
 let has_bad_stuff s = Re2.matches bad_stuff s
 
 let gen_string_no_separators =

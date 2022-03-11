@@ -1,6 +1,5 @@
 open! Core_kernel
 open Bio_io
-
 module Q = Quickcheck
 module Ic = Private.Peekable_in_channel
 

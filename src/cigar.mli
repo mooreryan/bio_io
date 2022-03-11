@@ -58,6 +58,7 @@ open! Base
 (** {1 API} *)
 
 exception Exn of string [@@deriving sexp]
+
 exception Int_overflow of (int * int) [@@deriving sexp]
 
 type t [@@deriving equal, sexp]

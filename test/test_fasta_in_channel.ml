@@ -1,6 +1,5 @@
 open! Base
 open Bio_io
-
 module Filename = Caml.Filename
 module In_channel = Stdio.In_channel
 module Out_channel = Stdio.Out_channel
@@ -8,11 +7,15 @@ module Out_channel = Stdio.Out_channel
 exception Exit
 
 let print_endline = Stdio.print_endline
+
 let printf = Stdio.printf
+
 let eprintf = Stdio.eprintf
+
 let sprintf = Printf.sprintf
 
 let exit = Caml.exit
+
 let raise_notrace = Caml.raise_notrace
 
 (* This one works with core kernel. *)

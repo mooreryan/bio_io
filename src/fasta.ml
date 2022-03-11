@@ -158,12 +158,17 @@ end = struct
   let ( = ) = equal
 
   let id r = r.id
+
   let desc r = r.desc
+
   let seq r = r.seq
+
   let seq_length r = String.length r.seq
 
   let with_id id r = { r with id }
+
   let with_seq seq r = { r with seq }
+
   let with_desc desc r = { r with desc }
 end
 
@@ -317,6 +322,7 @@ module In_channel : sig
 end = struct
   module T = struct
     include Private.Peekable_in_channel
+
     type record = Record.t
 
     let clean_sequence s = String.filter s ~f:(fun c -> Char.(c <> ' '))

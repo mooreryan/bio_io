@@ -2,14 +2,19 @@ open! Base
 open Bio_io
 
 let print_endline = Stdio.print_endline
+
 let printf = Stdio.printf
+
 let eprintf = Stdio.eprintf
+
 let sprintf = Printf.sprintf
 
 let exit = Caml.exit
+
 let raise_notrace = Caml.raise_notrace
 
 let print_sexp s = print_endline @@ Sexp.to_string_hum ~indent:1 s
+
 let os_equal = Option.equal String.equal
 
 let%expect_test _ =
