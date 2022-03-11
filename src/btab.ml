@@ -2,54 +2,54 @@ open! Base
 
 module Record = struct
   type t = {
-    qaccver : string;
-    saccver : string;
+    query : string;
+    target : string;
     pident : float;
-    length : int;
+    alnlen : int;
     mismatch : int;
     gapopen : int;
     qstart : int;
     qend : int;
-    sstart : int;
-    send : int;
+    tstart : int;
+    tend : int;
     evalue : float;
-    bitscore : float;
+    bits : float;
   }
   [@@deriving fields, sexp]
 
   let of_string s =
     match String.split ~on:'\t' s with
     | [
-     qaccver;
-     saccver;
+     query;
+     target;
      pident;
-     length;
+     alnlen;
      mismatch;
      gapopen;
      qstart;
      qend;
-     sstart;
-     send;
+     tstart;
+     tend;
      evalue;
-     bitscore;
+     bits;
     ] ->
-        Fields.create ~qaccver ~saccver ~pident:(Float.of_string pident)
-          ~length:(Int.of_string length) ~mismatch:(Int.of_string mismatch)
+        Fields.create ~query ~target ~pident:(Float.of_string pident)
+          ~alnlen:(Int.of_string alnlen) ~mismatch:(Int.of_string mismatch)
           ~gapopen:(Int.of_string gapopen) ~qstart:(Int.of_string qstart)
-          ~qend:(Int.of_string qend) ~sstart:(Int.of_string sstart)
-          ~send:(Int.of_string send) ~evalue:(Float.of_string evalue)
-          ~bitscore:(Float.of_string bitscore)
+          ~qend:(Int.of_string qend) ~tstart:(Int.of_string tstart)
+          ~tend:(Int.of_string tend) ~evalue:(Float.of_string evalue)
+          ~bits:(Float.of_string bits)
     | _ -> failwith "Bad input"
 
   let to_string t =
     let conv to_s acc f = to_s (Field.get f t) :: acc in
     String.concat ~sep:"\t" @@ List.rev
-    @@ Fields.fold ~init:[] ~qaccver:(conv Fn.id) ~saccver:(conv Fn.id)
-         ~pident:(conv Float.to_string) ~length:(conv Int.to_string)
+    @@ Fields.fold ~init:[] ~query:(conv Fn.id) ~target:(conv Fn.id)
+         ~pident:(conv Float.to_string) ~alnlen:(conv Int.to_string)
          ~mismatch:(conv Int.to_string) ~gapopen:(conv Int.to_string)
          ~qstart:(conv Int.to_string) ~qend:(conv Int.to_string)
-         ~sstart:(conv Int.to_string) ~send:(conv Int.to_string)
-         ~evalue:(conv Float.to_string) ~bitscore:(conv Float.to_string)
+         ~tstart:(conv Int.to_string) ~tend:(conv Int.to_string)
+         ~evalue:(conv Float.to_string) ~bits:(conv Float.to_string)
 end
 
 module In_channel : sig
