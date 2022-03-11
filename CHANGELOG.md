@@ -1,10 +1,12 @@
 ## Unreleased
 
+- Update `ocamlformat` to `0.20.1`
+
 ## 0.4.0 (2021-12-19)
 
 ### Fixed
 
-- [Fasta.In_channel] can now read from fifos...e.g., you can pipe the output of `gunzip -c`directly into a program using the fasta parser and it will be okay.
+- [Fasta.In_channel] can now read from fifos...e.g., you can pipe the output of `gunzip -c` directly into a program using the fasta parser and it will be okay.
 
 ### Added
 
@@ -14,7 +16,7 @@
 ### Changed
 
 - `Fasta_in_channel` is now `Fasta.In_channel` (breaking change)
-- `Fasta_record` is now `Fasta.Record`  (breaking change)
+- `Fasta_record` is now `Fasta.Record` (breaking change)
 - Various non-breaking changes
 
 ## 0.3.0 (2021-09-26)
