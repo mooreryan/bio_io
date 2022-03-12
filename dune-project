@@ -9,9 +9,8 @@
 (package
  (name bio_io)
  (version 0.5.0-preview)
- (license "MIT OR Apache-2.0")
- (maintainers "Ryan Moore")
- (authors "Ryan Moore")
+ (maintainers "Ryan M. Moore")
+ (authors "Ryan M. Moore")
  (homepage "https://github.com/mooreryan/bio_io")
  (source
   (github mooreryan/bio_io))

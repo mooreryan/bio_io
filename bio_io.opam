@@ -3,9 +3,8 @@ opam-version: "2.0"
 version: "0.5.0-preview"
 synopsis:
   "A library for reading and writing common file formats used in bioinformatics like FASTA files"
-maintainer: ["Ryan Moore"]
-authors: ["Ryan Moore"]
-license: "MIT OR Apache-2.0"
+maintainer: ["Ryan M. Moore"]
+authors: ["Ryan M. Moore"]
 homepage: "https://github.com/mooreryan/bio_io"
 doc: "https://mooreryan.github.io/bio_io/"
 bug-reports: "https://github.com/mooreryan/bio_io/issues"
@@ -28,6 +27,7 @@ depends: [
   "odoc" {with-doc}
 ]
 dev-repo: "git+https://github.com/mooreryan/bio_io.git"
+license: ["MIT" "Apache-2.0"]
 build: [
   ["dune" "subst"] {dev}
   [
