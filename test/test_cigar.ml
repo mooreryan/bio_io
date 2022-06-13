@@ -11,7 +11,8 @@ let print_endline = Stdio.print_endline
 
 let print_cigar_parse_result x =
   let redact s =
-    Re2.replace_exn (Re2.create_exn "\\(.*Exn") s ~f:(fun _ -> "(REDACTED Exn")
+    let re = Re.Perl.compile_pat "\\(.*Exn" in
+    Re.replace_string re ~by:"(REDACTED Exn" s
   in
   print_endline @@ redact
   @@ Sexp.to_string_hum ~indent:1 ([%sexp_of: Cigar.t Or_error.t] x)
@@ -336,8 +337,8 @@ let count_implementation re cigar =
   in
   let f () =
     let n =
-      Re2.get_matches_exn re cigar
-      |> List.map ~f:(fun m -> m |> Re2.Match.get_exn ~sub:(`Index 1))
+      Re.all re cigar
+      |> List.map ~f:(fun m -> Re.Group.get m 1)
       (* Folding and adding up ints can overflow...which wraps around in
          OCaml. *)
       |> List.fold ~init:0 ~f:(fun count -> function
@@ -351,11 +352,11 @@ let count_implementation re cigar =
   in
   Utils.try0 f
 
-let re_MID_chunk = Re2.create_exn "([0-9]*)[MID]"
-let re_ID_chunk = Re2.create_exn "([0-9]*)[ID]"
-let re_M_chunk = Re2.create_exn "([0-9]*)M"
-let re_MI_chunk = Re2.create_exn "([0-9]*)[MI]"
-let re_MD_chunk = Re2.create_exn "([0-9]*)[MD]"
+let re_MID_chunk = Re.Perl.compile_pat "([0-9]*)[MID]"
+let re_ID_chunk = Re.Perl.compile_pat "([0-9]*)[ID]"
+let re_M_chunk = Re.Perl.compile_pat "([0-9]*)M"
+let re_MI_chunk = Re.Perl.compile_pat "([0-9]*)[MI]"
+let re_MD_chunk = Re.Perl.compile_pat "([0-9]*)[MD]"
 let alignment_length cigar = count_implementation re_MID_chunk cigar
 let num_gaps cigar = count_implementation re_ID_chunk cigar
 let num_matches cigar = count_implementation re_M_chunk cigar

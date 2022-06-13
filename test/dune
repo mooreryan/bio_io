@@ -1,6 +1,6 @@
 (library
  (name test_bio_io)
- (libraries bio_io base base_quickcheck re2 stdio)
+ (libraries bio_io base base_quickcheck re stdio)
  (inline_tests
   (deps test_files/btab.tsv test_files/bad_btab.tsv))
  (preprocess

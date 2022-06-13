@@ -68,7 +68,7 @@
    (and
     (>= "v0.15")
     :with-test))
-  (re2
+  (re
    (and
-    (>= "v0.15")
+    (>= "1.10")
     :with-test))))

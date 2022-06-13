@@ -101,8 +101,8 @@ let%expect_test _ =
 
 (* Property tests *)
 
-let bad_stuff = Re2.create_exn "[\t\r\n]"
-let has_bad_stuff s = Re2.matches bad_stuff s
+let bad_stuff = Re.Perl.compile_pat "[\t\r\n]"
+let has_bad_stuff s = Re.execp bad_stuff s
 let gen_string_no_separators = QG.filter QG.string ~f:(Fn.non has_bad_stuff)
 
 (* Generate btab lines...the numbers won't always make sense but it has the
@@ -174,8 +174,8 @@ module Silly_record = struct
 
   let generate_valid_line =
     let open QG in
-    let bad_stuff = Re2.create_exn "[,\r\n]" in
-    let has_bad_stuff s = Re2.matches bad_stuff s in
+    let bad_stuff = Re.Perl.compile_pat "[,\r\n]" in
+    let has_bad_stuff s = Re.execp bad_stuff s in
     let gen_string_no_separators =
       QG.filter QG.string ~f:(Fn.non has_bad_stuff)
     in
