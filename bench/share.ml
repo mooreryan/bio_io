@@ -2,7 +2,6 @@ open! Core
 open Bio_io
 
 let infile = Sys.getenv_exn "BENCH_FASTA_INFILE"
-
 let get_record_list () = Fasta.In_channel.with_file_records_exn infile
 
 let total_length () =

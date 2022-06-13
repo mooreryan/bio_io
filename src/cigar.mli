@@ -58,7 +58,6 @@ open! Base
 (** {1 API} *)
 
 exception Exn of string [@@deriving sexp]
-
 exception Int_overflow of (int * int) [@@deriving sexp]
 
 type t [@@deriving equal, sexp]
@@ -124,21 +123,27 @@ val alignment_length : t -> int Or_error.t
 
     Here is the alignment for this CIGAR string:
 
-    {[ assert (11 = Cigar.alignment_length @@ Cigar.of_string_exn "1M2I3D5M") ]} *)
+    {[
+      assert (11 = Cigar.alignment_length @@ Cigar.of_string_exn "1M2I3D5M")
+    ]} *)
 
 val num_gaps_exn : t -> int
 
 val num_gaps : t -> int Or_error.t
 (** [num_gaps t] returns the total number of gap columns in the alignment.
 
-    {[ assert (5 = Cigar.num_gaps @@ Cigar.of_string_exn "1M2I3D5M") ]}*)
+    {[
+      assert (5 = Cigar.num_gaps @@ Cigar.of_string_exn "1M2I3D5M")
+    ]}*)
 
 val num_matches_exn : t -> int
 
 val num_matches : t -> int Or_error.t
 (** [num_matches t] returns the number of matches in the alignment.
 
-    {[ assert (6 = Cigar.num_matches @@ Cigar.of_string_exn "1M2I3D5M") ]}
+    {[
+      assert (6 = Cigar.num_matches @@ Cigar.of_string_exn "1M2I3D5M")
+    ]}
 
     This is "ungapped alignment length" as in
     https://doi.org/10.1093/bioinformatics/bty262. Where ungapped is the
@@ -154,7 +159,9 @@ val query_length : t -> int Or_error.t
     string. If it is a local aligment, it may not be equal to the length of the
     entire query sequence.
 
-    {[ assert (8 = Cigar.query_length @@ Cigar.of_string_exn "1M2I3D5M") ]}*)
+    {[
+      assert (8 = Cigar.query_length @@ Cigar.of_string_exn "1M2I3D5M")
+    ]}*)
 
 val target_length_exn : t -> int
 
@@ -164,7 +171,9 @@ val target_length : t -> int Or_error.t
     the Cigar string. If it is a local aligment, it may not be equal to the
     length of the entire target sequence.
 
-    {[ assert (9 = Cigar.target_length @@ Cigar.of_string_exn "1M2I3D5M") ]} *)
+    {[
+      assert (9 = Cigar.target_length @@ Cigar.of_string_exn "1M2I3D5M")
+    ]} *)
 
 (** {2 Drawing Functions}
 
@@ -209,7 +218,9 @@ val draw :
     You can wrap long sequences so they don't take up so much horizontal space.
     This code
 
-    {[ print_endline @@ Cigar.draw ~wrap:10 @@ Cigar.of_string_exn "25M" ]}
+    {[
+      print_endline @@ Cigar.draw ~wrap:10 @@ Cigar.of_string_exn "25M"
+    ]}
 
     will print out
 

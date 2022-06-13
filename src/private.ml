@@ -7,13 +7,11 @@ module In_channel : sig
   include module type of Stdio.In_channel
 
   val create : string -> t
-
   val with_file : string -> f:(t -> 'a) -> 'a
 end = struct
   include Stdio.In_channel
 
   let create s = create ~binary:false s
-
   let with_file s ~f = with_file ~binary:false s ~f
 end
 
@@ -45,35 +43,25 @@ module Peekable_in_channel : sig
   type t [@@deriving equal]
 
   val stdin : t
-
   val create : string -> t
-
   val close : t -> unit
-
   val with_file : string -> f:(t -> 'a) -> 'a
-
   val input_all : t -> string
-
   val input_line : ?fix_win_eol:bool -> t -> string option
-
   val input_line_exn : ?fix_win_eol:bool -> t -> string
 
   val fold_lines :
     ?fix_win_eol:bool -> t -> init:'a -> f:('a -> string -> 'a) -> 'a
 
   val input_lines : ?fix_win_eol:bool -> t -> string list
-
   val iter_lines : ?fix_win_eol:bool -> t -> f:(string -> unit) -> unit
-
   val read_lines : ?fix_win_eol:bool -> string -> string list
-
   val read_all : string -> string
 
   (** Both [peek] functions are safe to call in the context of one of the
       iterator functions. *)
 
   val peek_char : ?fix_win_eol:bool -> t -> char option
-
   val peek_line : ?fix_win_eol:bool -> t -> string option
 end = struct
   (* TODO let user set newline. *)
@@ -84,7 +72,6 @@ end = struct
   [@@deriving equal]
 
   let stdin = { ic = Stdio.In_channel.stdin; buf = ref None }
-
   let create fname = { ic = Stdio.In_channel.create fname; buf = ref None }
 
   let close { ic; buf } =

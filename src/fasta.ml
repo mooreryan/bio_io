@@ -44,7 +44,9 @@ open! Base
 
     To change a part of the [Fasta.Record] use the [with_*] functions. E.g.,
 
-    {[ Fasta.Record.with_id "apple" record ]}
+    {[
+      Fasta.Record.with_id "apple" record
+    ]}
 
     would change give you a [t] with the [id] set to ["apple"]. *)
 module Record : sig
@@ -147,7 +149,6 @@ end = struct
     | Some desc -> Printf.sprintf ">%s %s\n%s" r.id desc r.seq
 
   let to_string_nl ?(nl = "\n") r = to_string r ^ nl
-
   let serialize r = Sexp.to_string_hum (sexp_of_t r)
 
   let equal r1 r2 =
@@ -156,19 +157,12 @@ end = struct
     && Option.equal String.equal r1.desc r2.desc
 
   let ( = ) = equal
-
   let id r = r.id
-
   let desc r = r.desc
-
   let seq r = r.seq
-
   let seq_length r = String.length r.seq
-
   let with_id id r = { r with id }
-
   let with_seq seq r = { r with seq }
-
   let with_desc desc r = { r with desc }
 end
 
@@ -181,7 +175,9 @@ end
 
     Simplest way. May raise exceptions.
 
-    {[ let records = Fasta.In_channel.with_file_records_exn fname ]}
+    {[
+      let records = Fasta.In_channel.with_file_records_exn fname
+    ]}
 
     A bit more involved, but you won't get exceptions. Instead, you have to
     handle the [Or_error.t].

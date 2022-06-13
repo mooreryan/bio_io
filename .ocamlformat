@@ -1,5 +1,4 @@
 profile = default
-version = 0.20.1
-module-item-spacing = sparse
+version = 0.22.4
 parse-docstrings = true
 wrap-comments = true

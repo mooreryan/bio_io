@@ -47,7 +47,6 @@ module type S = sig
   (** {1 API} *)
 
   type t
-
   type record
 
   val stdin : t
@@ -186,13 +185,11 @@ module type S = sig
       These functions return lists of [records]s. *)
 
   val records_exn : t -> record List.t
-
   val records : t -> record List.t Or_error.t
 
   (** {3 With file name} *)
 
   val with_file_records_exn : string -> record List.t
-
   val with_file_records : string -> record List.t Or_error.t
 
   (** {2 Getting records as a sequence}
@@ -225,22 +222,17 @@ end
     make a [Record_in_channel] module. *)
 module type In_channel_input_record = sig
   type t
-
   type record
 
   val equal : t -> t -> bool
-
   val stdin : t
-
   val close : t -> unit
 
   (** These two functions differ from the Stdio.In_channel in that they don't
       take a [binary] argument. *)
 
   val create : string -> t
-
   val with_file : string -> f:(t -> 'a) -> 'a
-
   val input_record_exn : t -> record option
 end
 
@@ -248,23 +240,14 @@ end
 module Make (M : In_channel_input_record) :
   S with type t := M.t with type record := M.record = struct
   let equal = M.equal
-
   let stdin = M.stdin
-
   let create_exn fname = M.create fname
-
   let create fname = Utils.try1 create_exn fname
-
   let close_exn t = M.close t
-
   let close t = Utils.try1 close_exn t
-
   let with_file_exn fname ~f = M.with_file fname ~f
-
   let with_file fname ~f = Utils.try_map with_file_exn fname ~f
-
   let input_record_exn t = M.input_record_exn t
-
   let input_record t = Utils.try1 input_record_exn t
 
   (* Folding over records *)
@@ -328,9 +311,7 @@ module Make (M : In_channel_input_record) :
       (fold_records_exn t ~init:[] ~f:(fun records record -> record :: records))
 
   let records t = Utils.try1 records_exn t
-
   let with_file_records_exn fname = with_file_exn fname ~f:records_exn
-
   let with_file_records fname = Utils.try1 with_file_records_exn fname
 
   (* Sequence generating functions are a little bit different. *)

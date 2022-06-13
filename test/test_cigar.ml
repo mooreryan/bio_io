@@ -211,14 +211,11 @@ let positive_int_generator =
 (* Counts are technically optional. If there is no count, it is treated as a
    count of one. Will generate count of zero. *)
 let count_generator = Option.quickcheck_generator positive_int_generator
-
 let small_count_generator = Quickcheck.Generator.small_positive_int
 (* TODO make a small count generating cigar generator. *)
 
 let num_chunks_generator = Q.Generator.small_non_negative_int
-
 let operation_generator = Q.Generator.of_list [ "M"; "D"; "I" ]
-
 let operation_list_generator = List.gen_non_empty operation_generator
 
 (* Compound generators. *)
@@ -325,23 +322,14 @@ let count_implementation re cigar =
   Utils.try0 f
 
 let re_MID_chunk = Re2.create_exn "([0-9]*)[MID]"
-
 let re_ID_chunk = Re2.create_exn "([0-9]*)[ID]"
-
 let re_M_chunk = Re2.create_exn "([0-9]*)M"
-
 let re_MI_chunk = Re2.create_exn "([0-9]*)[MI]"
-
 let re_MD_chunk = Re2.create_exn "([0-9]*)[MD]"
-
 let alignment_length cigar = count_implementation re_MID_chunk cigar
-
 let num_gaps cigar = count_implementation re_ID_chunk cigar
-
 let num_matches cigar = count_implementation re_M_chunk cigar
-
 let query_length cigar = count_implementation re_MI_chunk cigar
-
 let target_length cigar = count_implementation re_MD_chunk cigar
 
 let count_fun_tester reference_impl real_impl =
@@ -354,13 +342,9 @@ let count_fun_tester reference_impl real_impl =
       [%test_eq: int Or_error.t] x y)
 
 let%test_unit _ = count_fun_tester alignment_length Cigar.alignment_length
-
 let%test_unit _ = count_fun_tester num_gaps Cigar.num_gaps
-
 let%test_unit _ = count_fun_tester num_matches Cigar.num_matches
-
 let%test_unit _ = count_fun_tester query_length Cigar.query_length
-
 let%test_unit _ = count_fun_tester target_length Cigar.target_length
 
 (* Drawing functions shouldn't crash on valid inputs. *)

@@ -80,7 +80,8 @@ let%expect_test _ =
       print_endline "===";
       print_endline @@ Btab_queries.Record.query r;
       print_s @@ [%sexp_of: Btab.Record.t list] @@ Btab_queries.Record.hits r);
-  [%expect {|
+  [%expect
+    {|
     ===
     Q 1
     (((query "Q 1") (target q1t1) (pident 0.1) (alnlen 2) (mismatch 3)
@@ -98,7 +99,6 @@ let%expect_test _ =
 (* Property tests *)
 
 let bad_stuff = Re2.create_exn "[\t\r\n]"
-
 let has_bad_stuff s = Re2.matches bad_stuff s
 
 let gen_string_no_separators =

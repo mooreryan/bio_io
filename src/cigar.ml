@@ -31,7 +31,6 @@ let op_of_char = function
   | c -> Or_error.errorf "Expected M, D, or I. Got %c." c
 
 let op_to_char = function Match -> 'M' | Insertion -> 'I' | Deletion -> 'D'
-
 let op_to_string = function Match -> "M" | Insertion -> "I" | Deletion -> "D"
 
 module Chunk : sig
@@ -40,11 +39,8 @@ module Chunk : sig
   type t [@@deriving equal, sexp]
 
   val create : int -> op -> t Or_error.t
-
   val to_string : t -> string
-
   val length : t -> int
-
   val op : t -> op
 end = struct
   type t = int * op [@@deriving equal, sexp]
@@ -54,9 +50,7 @@ end = struct
     else Or_error.errorf "Length must be > 0.  Got %d." length
 
   let to_string (length, op) = Int.to_string length ^ op_to_string op
-
   let length (length, _op) = length
-
   let op (_length, op) = op
 end
 
@@ -95,7 +89,6 @@ let of_string_exn s =
   List.rev pairs
 
 let of_string s = Utils.try1' ~msg:"Error parsing cigar string" of_string_exn s
-
 let to_string cigar = String.concat ~sep:"" @@ List.map cigar ~f:Chunk.to_string
 
 let alignment_length_exn cigar =
