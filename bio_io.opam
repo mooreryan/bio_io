@@ -11,7 +11,7 @@ bug-reports: "https://github.com/mooreryan/bio_io/issues"
 depends: [
   "dune" {>= "2.8"}
   "base" {>= "v0.15"}
-  "ocaml" {>= "4.08.0"}
+  "ocaml" {>= "4.10"}
   "ppx_compare" {>= "v0.15"}
   "ppx_fields_conv" {>= "v0.15"}
   "ppx_sexp_conv" {>= "v0.15"}

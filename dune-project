@@ -22,6 +22,8 @@
 (package
  (name bio_io-dev)
  (depends
+  (ocaml
+   (>= "4.11"))
   (core
    (>= "v0.15"))
   (core_bench
@@ -42,7 +44,7 @@
   (base
    (>= "v0.15"))
   (ocaml
-   (>= "4.08.0"))
+   (>= "4.10"))
   (ppx_compare
    (>= "v0.15"))
   (ppx_fields_conv
