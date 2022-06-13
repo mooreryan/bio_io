@@ -56,7 +56,7 @@
    (and
     (>= "v0.15")
     :with-test))
-  (core_kernel
+  (base_quickcheck
    (and
     (>= "v0.15")
     :with-test))

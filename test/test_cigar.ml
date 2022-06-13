@@ -1,6 +1,13 @@
-open! Core_kernel
+open! Base
 open Bio_io
-module Q = Quickcheck
+module Q = Base_quickcheck
+module QG = Base_quickcheck.Generator
+
+module Tuple2 = struct
+  type ('a, 'b) t = 'a * 'b [@@deriving sexp]
+end
+
+let print_endline = Stdio.print_endline
 
 let print_cigar_parse_result x =
   let redact s =
@@ -204,19 +211,20 @@ let%expect_test _ =
 (* Basic generators. *)
 
 (* Generates non-negative ints of any size, unlike
-   Q.Generator.small_non_negative_int. *)
-let positive_int_generator =
-  Q.Generator.filter Int.quickcheck_generator ~f:(fun n -> n > 0)
+   Q.Generator.small_non_negative_int.
+
+   TODO do I still need this with base_quickcheck? *)
+let positive_int_generator = Q.Generator.filter QG.int ~f:(fun n -> n > 0)
 
 (* Counts are technically optional. If there is no count, it is treated as a
    count of one. Will generate count of zero. *)
-let count_generator = Option.quickcheck_generator positive_int_generator
-let small_count_generator = Quickcheck.Generator.small_positive_int
+let count_generator = QG.option positive_int_generator
+let small_count_generator = QG.small_strictly_positive_int
 (* TODO make a small count generating cigar generator. *)
 
-let num_chunks_generator = Q.Generator.small_non_negative_int
+let num_chunks_generator = QG.small_positive_or_zero_int
 let operation_generator = Q.Generator.of_list [ "M"; "D"; "I" ]
-let operation_list_generator = List.gen_non_empty operation_generator
+let operation_list_generator = QG.list_non_empty operation_generator
 
 (* Compound generators. *)
 
@@ -236,8 +244,8 @@ let cigar_chunk_maybe_count_generator =
 let cigar_string_generator cigar_chunk_generator =
   let open Q.Generator.Monad_infix in
   num_chunks_generator >>= fun num_chunks ->
-  List.gen_with_length num_chunks cigar_chunk_generator >>= fun op_list ->
-  Q.Generator.return @@ String.concat op_list ~sep:""
+  QG.list_with_length ~length:num_chunks cigar_chunk_generator
+  >>= fun op_list -> Q.Generator.return @@ String.concat op_list ~sep:""
 
 (* Generate a tuple of cigar string made of only count 1 operations. The first
    elem uses blanks for count of 1. The second uses "1" to denote a count of
@@ -252,34 +260,56 @@ let single_operation_string_tuple_generator =
 
 (* Quickcheck tests *)
 
+let make_string_test quickcheck_generator :
+    (module Q.Test.S with type t = string) =
+  (module struct
+    type t = string [@@deriving sexp]
+
+    let quickcheck_generator = quickcheck_generator
+    let quickcheck_shrinker = Q.Shrinker.string
+  end)
+
+let make_non_shrinking_string_test quickcheck_generator :
+    (module Q.Test.S with type t = string) =
+  (module struct
+    type t = string [@@deriving sexp]
+
+    let quickcheck_generator = quickcheck_generator
+    let quickcheck_shrinker = Q.Shrinker.atomic
+  end)
+
 let%test_unit "or_error returning parser never raises" =
-  Q.test String.quickcheck_generator ~shrinker:String.quickcheck_shrinker
-    ~sexp_of:String.sexp_of_t ~f:(fun s ->
+  Q.Test.run_exn (make_string_test QG.string) ~f:(fun s ->
       let (_ : Cigar.t Or_error.t) = Cigar.of_string s in
       ())
 
 let%test_unit "_exn cigar parsing with valid inputs doesn't raise" =
   let generator = cigar_string_generator cigar_chunk_maybe_count_generator in
-  Q.test generator ~sexp_of:String.sexp_of_t ~f:(fun s ->
+  Q.Test.run_exn (make_non_shrinking_string_test generator) ~f:(fun s ->
       let (_ : Cigar.t) = Cigar.of_string_exn s in
       ())
 
 let%test_unit "round tripping cigar string with counts parsing" =
   let generator = cigar_string_generator cigar_chunk_with_count_generator in
-  Q.test generator ~sexp_of:String.sexp_of_t ~f:(fun cigar ->
+  Q.Test.run_exn (make_non_shrinking_string_test generator) ~f:(fun cigar ->
       let cigar' = cigar |> Cigar.of_string_exn |> Cigar.to_string in
       [%test_eq: string] cigar cigar')
 
 let%test_unit "cigar equals works" =
   let generator = cigar_string_generator cigar_chunk_maybe_count_generator in
-  Q.test generator ~sexp_of:String.sexp_of_t ~f:(fun s ->
+  Q.Test.run_exn (make_non_shrinking_string_test generator) ~f:(fun s ->
       let c1 = Cigar.of_string_exn s in
       let c2 = Cigar.of_string_exn s in
       assert (Cigar.equal c1 c2))
 
 let%test_unit "count of one and blank are the same" =
-  Q.test single_operation_string_tuple_generator
-    ~sexp_of:(Tuple2.sexp_of_t String.sexp_of_t String.sexp_of_t)
+  Q.Test.run_exn
+    (module struct
+      type t = (string, string) Tuple2.t [@@deriving sexp]
+
+      let quickcheck_generator = single_operation_string_tuple_generator
+      let quickcheck_shrinker = Q.Shrinker.atomic
+    end)
     ~f:(fun (with_blanks, with_ones) ->
       let x = Cigar.sexp_of_t @@ Cigar.of_string_exn with_ones in
       let y = Cigar.sexp_of_t @@ Cigar.of_string_exn with_blanks in
@@ -289,7 +319,7 @@ let%test_unit "count of one and blank are the same" =
 
 (* let%test_unit _ =
  *   let generator = cigar_string_generator cigar_chunk_maybe_count_generator in
- *   Q.test generator ~sexp_of:String.sexp_of_t ~f:(fun cigar_s ->
+ *   Q.Test.run_exn (make_non_shrinking_string_test generator) ~f:(fun cigar_s ->
  *       let cigar = Cigar.of_string_exn cigar_s in
  *       let _x = Cigar.draw cigar in
  *       ()) *)
@@ -334,7 +364,7 @@ let target_length cigar = count_implementation re_MD_chunk cigar
 
 let count_fun_tester reference_impl real_impl =
   let generator = cigar_string_generator cigar_chunk_maybe_count_generator in
-  Q.test generator ~sexp_of:String.sexp_of_t ~f:(fun cigar_s ->
+  Q.Test.run_exn (make_non_shrinking_string_test generator) ~f:(fun cigar_s ->
       (* This will test that the same Int_overflow exception is thrown as
          well. *)
       let x = reference_impl cigar_s in
@@ -351,7 +381,7 @@ let%test_unit _ = count_fun_tester target_length Cigar.target_length
 
 let%test_unit _ =
   let generator = cigar_string_generator cigar_chunk_maybe_count_generator in
-  Q.test generator ~sexp_of:String.sexp_of_t ~f:(fun cigar_s ->
+  Q.Test.run_exn (make_non_shrinking_string_test generator) ~f:(fun cigar_s ->
       let cigar = Cigar.of_string_exn cigar_s in
       let _x = Cigar.draw cigar in
       ())

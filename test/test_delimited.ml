@@ -1,11 +1,14 @@
-open! Core_kernel
+open! Base
 open! Bio_io
-module Q = Quickcheck
+module Q = Base_quickcheck
+module QG = Base_quickcheck.Generator
 
+let print_s = Stdio.print_s
+let print_endline = Stdio.print_endline
+
+(* 10_000 is the default test count in base_quickcheck v0.15 *)
 let trials =
-  match Sys.getenv "QC_TRIALS" with
-  | None -> Q.default_trial_count
-  | Some x -> Int.of_string x
+  match Sys.getenv "QC_TRIALS" with None -> 10_000 | Some x -> Int.of_string x
 
 let write_tmp_file data =
   let fname =
@@ -100,27 +103,25 @@ let%expect_test _ =
 
 let bad_stuff = Re2.create_exn "[\t\r\n]"
 let has_bad_stuff s = Re2.matches bad_stuff s
-
-let gen_string_no_separators =
-  Q.Generator.filter String.quickcheck_generator ~f:(Fn.non has_bad_stuff)
+let gen_string_no_separators = QG.filter QG.string ~f:(Fn.non has_bad_stuff)
 
 (* Generate btab lines...the numbers won't always make sense but it has the
    correct number of columns. *)
 let generate_valid_btab_line =
-  let open Q.Generator in
+  let open QG in
   gen_string_no_separators >>= fun query ->
   gen_string_no_separators >>= fun target ->
-  Float.quickcheck_generator >>= fun fident ->
-  Int.quickcheck_generator >>= fun alnlen ->
-  Int.quickcheck_generator >>= fun mismatch ->
-  Int.quickcheck_generator >>= fun gapopen ->
-  Int.quickcheck_generator >>= fun qstart ->
-  Int.quickcheck_generator >>= fun qend ->
-  Int.quickcheck_generator >>= fun tstart ->
-  Int.quickcheck_generator >>= fun tend ->
-  Float.quickcheck_generator >>= fun evalue ->
-  Float.quickcheck_generator >>= fun bits ->
-  Q.Generator.return
+  QG.float >>= fun fident ->
+  QG.int >>= fun alnlen ->
+  QG.int >>= fun mismatch ->
+  QG.int >>= fun gapopen ->
+  QG.int >>= fun qstart ->
+  QG.int >>= fun qend ->
+  QG.int >>= fun tstart ->
+  QG.int >>= fun tend ->
+  QG.float >>= fun evalue ->
+  QG.float >>= fun bits ->
+  QG.return
   @@ String.concat ~sep:"\t"
        [
          query;
@@ -138,18 +139,26 @@ let generate_valid_btab_line =
        ]
 
 let generate_valid_btab_with_len_line =
-  let open Q.Generator in
+  let open QG in
   generate_valid_btab_line >>= fun btab ->
-  Int.quickcheck_generator >>= fun qlen ->
-  Int.quickcheck_generator >>= fun tlen ->
-  Q.Generator.return
+  QG.int >>= fun qlen ->
+  QG.int >>= fun tlen ->
+  QG.return
   @@ String.concat ~sep:"\t" [ btab; Int.to_string qlen; Int.to_string tlen ]
 
 let%test_unit "Blast_6_record round tripping works" =
-  Q.test ~trials generate_valid_btab_line ~sexp_of:String.sexp_of_t
-    ~f:(fun btab_line ->
-      let parsed = Btab.Record.to_string @@ Btab.Record.of_string btab_line in
-      [%test_eq: string] parsed btab_line)
+  let config = { Q.Test.default_config with test_count = trials } in
+  let f btab_line =
+    let parsed = Btab.Record.to_string @@ Btab.Record.of_string btab_line in
+    [%test_eq: string] parsed btab_line
+  in
+  Q.Test.run_exn ~config ~f
+    (module struct
+      type t = string [@@deriving sexp]
+
+      let quickcheck_generator = generate_valid_btab_line
+      let quickcheck_shrinker = Q.Shrinker.atomic
+    end)
 
 (* Let's make a custom in_channel. *)
 
@@ -164,15 +173,14 @@ module Silly_record = struct
   let to_string { query; target } = query ^ "," ^ target
 
   let generate_valid_line =
-    let open Q.Generator in
+    let open QG in
     let bad_stuff = Re2.create_exn "[,\r\n]" in
     let has_bad_stuff s = Re2.matches bad_stuff s in
     let gen_string_no_separators =
-      Q.Generator.filter String.quickcheck_generator ~f:(Fn.non has_bad_stuff)
+      QG.filter QG.string ~f:(Fn.non has_bad_stuff)
     in
     gen_string_no_separators >>= fun query ->
-    gen_string_no_separators >>= fun target ->
-    Q.Generator.return (query ^ "," ^ target)
+    gen_string_no_separators >>= fun target -> QG.return (query ^ "," ^ target)
 end
 
 module Silly_in_channel : sig
@@ -192,10 +200,18 @@ end = struct
 end
 
 let%test_unit "Silly_record round tripping works" =
-  Q.test ~trials Silly_record.generate_valid_line ~sexp_of:String.sexp_of_t
-    ~f:(fun line ->
-      let parsed = Silly_record.to_string @@ Silly_record.of_string line in
-      [%test_eq: string] parsed line)
+  let config = { Q.Test.default_config with test_count = trials } in
+  let f line =
+    let parsed = Silly_record.to_string @@ Silly_record.of_string line in
+    [%test_eq: string] parsed line
+  in
+  Q.Test.run_exn ~config ~f
+    (module struct
+      type t = string [@@deriving sexp]
+
+      let quickcheck_generator = Silly_record.generate_valid_line
+      let quickcheck_shrinker = Q.Shrinker.atomic
+    end)
 
 let%expect_test "illegal atom" =
   let records =

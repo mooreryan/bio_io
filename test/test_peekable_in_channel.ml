@@ -1,12 +1,15 @@
-open! Core_kernel
+open! Base
 open Bio_io
-module Q = Quickcheck
+module Q = Base_quickcheck
+module QG = Base_quickcheck.Generator
 module Ic = Private.Peekable_in_channel
 
+let print_s = Stdio.print_s
+let print_endline = Stdio.print_endline
+let print_string = Stdio.print_string
+
 let trials =
-  match Sys.getenv "QC_TRIALS" with
-  | None -> Q.default_trial_count
-  | Some x -> Int.of_string x
+  match Sys.getenv "QC_TRIALS" with None -> 10_000 | Some x -> Int.of_string x
 
 let write_tmp_file data =
   let fname =
@@ -344,13 +347,22 @@ let%expect_test "input all, peek first (crlf)" =
     hey y'all
     what's up? |}]
 
-let lines_generator =
-  Q.Generator.map
-    (Q.Generator.list String.quickcheck_generator)
-    ~f:(String.concat ~sep:"\n")
+(* TODO would be nice to get these prop tests to avoid hitting the disk. *)
+
+let lines_generator = QG.map (QG.list QG.string) ~f:(String.concat ~sep:"\n")
+
+let lines_test f =
+  let config = { Q.Test.default_config with test_count = trials } in
+  Q.Test.run_exn ~config ~f
+    (module struct
+      type t = string [@@deriving sexp]
+
+      let quickcheck_generator = lines_generator
+      let quickcheck_shrinker = Q.Shrinker.atomic
+    end)
 
 let%test_unit "read_all" =
-  Q.test lines_generator ~trials ~f:(fun data ->
+  lines_test (fun data ->
       let fname, _ = write_tmp_file data in
       let expected = Stdio.In_channel.read_all fname in
       let actual = Ic.read_all fname in
@@ -358,7 +370,7 @@ let%test_unit "read_all" =
 
 (* Uses fold_lines internally *)
 let%test_unit "iter_lines" =
-  Q.test lines_generator ~trials ~f:(fun data ->
+  lines_test (fun data ->
       let fname, _ = write_tmp_file data in
       let expected = ref 0 in
       let actual = ref 0 in
@@ -371,7 +383,7 @@ let%test_unit "iter_lines" =
       [%test_eq: int] !actual !expected)
 
 let%test_unit "iter_lines with peek" =
-  Q.test lines_generator ~trials ~f:(fun data ->
+  lines_test (fun data ->
       let fname, _ = write_tmp_file data in
       let expected = ref 0 in
       let actual = ref 0 in
@@ -390,7 +402,7 @@ let%test_unit "iter_lines with peek" =
       [%test_eq: int] !actual !expected)
 
 let%test_unit "getting lines and peek" =
-  Q.test lines_generator ~trials ~f:(fun data ->
+  lines_test (fun data ->
       let fname, _ = write_tmp_file data in
       let expected_lines =
         Stdio.In_channel.with_file fname ~f:(fun t ->
@@ -411,14 +423,14 @@ let%test_unit "getting lines and peek" =
       [%test_eq: string list] actual_lines expected_lines)
 
 let%test_unit "read_lines" =
-  Q.test lines_generator ~trials ~f:(fun data ->
+  lines_test (fun data ->
       let fname, _ = write_tmp_file data in
       let expected = Stdio.In_channel.read_lines fname in
       let actual = Ic.read_lines fname in
       [%test_eq: string list] actual expected)
 
 let%test_unit "input_lines no fix eol" =
-  Q.test lines_generator ~trials ~f:(fun data ->
+  lines_test (fun data ->
       let fname, _ = write_tmp_file data in
       let expected =
         Stdio.In_channel.with_file fname

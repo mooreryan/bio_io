@@ -26,8 +26,7 @@ open! Base
     all your code in [with_file] function calls.
 
     Functions that the [_exn] suffix in their name may raise exceptions, either
-    from logic specific to this module, or from calls to other [Core_kernel]
-    functions.
+    from logic specific to this module, or from calls to other [Base] functions.
 
     Functions that return [Or_error.t] catch {i all} exceptions, even those not
     originating in the logic of this module. These functions shouldn't raise in

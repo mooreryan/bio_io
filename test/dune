@@ -1,6 +1,6 @@
 (library
  (name test_bio_io)
- (libraries bio_io core_kernel stdio re2)
+ (libraries bio_io base base_quickcheck re2 stdio)
  (inline_tests
   (deps test_files/btab.tsv test_files/bad_btab.tsv))
  (preprocess
@@ -8,8 +8,3 @@
 
 (cram
  (deps ../examples/parse_fasta.exe))
-
-(env
- (dev
-  (flags
-   (:standard -w -3))))
