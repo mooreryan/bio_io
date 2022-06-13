@@ -1,4 +1,4 @@
-(lang dune 2.8)
+(lang dune 3.2)
 
 (generate_opam_files true)
 
@@ -21,6 +21,7 @@
 
 (package
  (name bio_io-dev)
+ (allow_empty)
  (depends
   (ocaml
    (>= "4.11"))
@@ -34,7 +35,9 @@
   (ocamlformat
    (and
     (>= "0.22")
-    (< "0.23")))))
+    (< "0.23")))
+  (ocaml-lsp-server
+   (>= "1.11"))))
 
 (package
  (name bio_io)

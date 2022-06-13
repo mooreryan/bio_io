@@ -12,4 +12,4 @@ let fname =
   | 2 -> argv.(1)
   | _ -> abort "usage: fuzz_in_channel.exe seqs.fa"
 
-let seqs = Private.In_channel.read_lines fname
+let _seqs = Private.In_channel.read_lines fname

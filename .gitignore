@@ -2,3 +2,5 @@ _*
 
 fuzz/afl_output/
 src/*backup
+
+.vscode

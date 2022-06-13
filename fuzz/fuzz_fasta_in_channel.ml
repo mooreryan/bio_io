@@ -12,4 +12,4 @@ let fname =
   | 2 -> argv.(1)
   | _ -> abort "usage: fuzz_fasta_in_channel.exe seqs.fa"
 
-let seqs = Fasta.In_channel.with_file_records fname
+let _seqs = Fasta.In_channel.with_file_records fname

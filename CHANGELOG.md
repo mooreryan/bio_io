@@ -10,8 +10,10 @@
 - Drop the `Mmseqs` module (breaking change)
 - Drop `core_kernel` from the tests, add `base_quickcheck` instead
 - Drop `bisect_ppx`, `core`, and `core_bench` from `opam` file. These are now in the `bio_io-dev.opam` file.
-- Update `ocamlformat` to `0.22.4`
+- Drop `re2` in favor of `re`
+- Update `dune` to `3.2`
 - Update Jane Street libraries to `v0.15`
+- Update `ocamlformat` to `0.22.4`
 
 ## 0.4.0 (2021-12-19)
 
