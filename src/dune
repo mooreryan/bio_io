@@ -7,4 +7,5 @@
  (preprocess
   (pps ppx_compare ppx_fields_conv ppx_sexp_conv)))
 
-(documentation)
+(documentation
+ (package bio_io))

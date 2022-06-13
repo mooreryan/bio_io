@@ -16,7 +16,7 @@ let cigars =
 
 let () =
   let bench name f = Bench.Test.create ~name (fun () -> f ()) in
-  Command.run
+  Command_unix.run
     (Bench.make_command
        [
          bench "of_string" (fun () ->

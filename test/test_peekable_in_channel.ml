@@ -4,7 +4,7 @@ module Q = Quickcheck
 module Ic = Private.Peekable_in_channel
 
 let trials =
-  match Sys.getenv_opt "QC_TRIALS" with
+  match Sys.getenv "QC_TRIALS" with
   | None -> Q.default_trial_count
   | Some x -> Int.of_string x
 

@@ -4,62 +4,71 @@
 
 (cram enable)
 
-(name bio_io)
+(version 0.5.0-preview)
+
+(maintainers "Ryan M. Moore")
+
+(authors "Ryan M. Moore")
+
+(homepage "https://github.com/mooreryan/bio_io")
+
+(source
+ (github mooreryan/bio_io))
+
+(documentation "https://mooreryan.github.io/bio_io/")
+
+(bug_reports "https://github.com/mooreryan/bio_io/issues")
+
+(package
+ (name bio_io-dev)
+ (depends
+  (core
+   (>= "v0.15"))
+  (core_bench
+   (>= "v0.15"))
+  (core_unix
+   (>= "v0.15"))
+  (ocamlformat
+   (and
+    (>= "0.22")
+    (< "0.23")))))
 
 (package
  (name bio_io)
- (version 0.5.0-preview)
- (maintainers "Ryan M. Moore")
- (authors "Ryan M. Moore")
- (homepage "https://github.com/mooreryan/bio_io")
- (source
-  (github mooreryan/bio_io))
- (documentation "https://mooreryan.github.io/bio_io/")
- (bug_reports "https://github.com/mooreryan/bio_io/issues")
  (synopsis
   "A library for reading and writing common file formats used in bioinformatics like FASTA files")
  (depends
   ; Runtime dependencies
   (base
-   (>= "v0.12"))
+   (>= "v0.15"))
   (ocaml
    (>= "4.08.0"))
   (ppx_compare
-   (>= "v0.12"))
+   (>= "v0.15"))
   (ppx_fields_conv
-   (>= "v0.12"))
+   (>= "v0.15"))
   (ppx_sexp_conv
-   (>= "v0.12"))
+   (>= "v0.15"))
   (stdio
-   (>= "v0.12"))
+   (>= "v0.15"))
   ; Test-only dependencies
   (ppx_assert
    (and
-    (>= "v0.12")
+    (>= "v0.15")
     :with-test))
   (core_kernel
    (and
-    (>= "v0.12")
+    (>= "v0.15")
     :with-test))
   (ppx_expect
    (and
-    (>= "v0.12")
+    (>= "v0.15")
     :with-test))
   (ppx_inline_test
    (and
-    (>= "v0.12")
+    (>= "v0.15")
     :with-test))
   (re2
    (and
-    (>= "v0.12")
-    :with-test))
-  ; Development dependencies
-  (bisect_ppx :dev)
-  (core
-   (and
-    (>= "v0.12")
-    :dev))
-  (core_bench
-   (and
-    (>= "v0.12")
-    :dev))))
+    (>= "v0.15")
+    :with-test))))

@@ -8,7 +8,7 @@ module Ic = Private.Peekable_in_channel
 
 let () =
   let bench name = Bench.Test.create ~name in
-  Command.run
+  Command_unix.run
     (Bench.make_command
        [
          bench "ic_read_all" (fun () -> ignore (Ic.read_all infile));

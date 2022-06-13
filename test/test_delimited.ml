@@ -3,7 +3,7 @@ open! Bio_io
 module Q = Quickcheck
 
 let trials =
-  match Sys.getenv_opt "QC_TRIALS" with
+  match Sys.getenv "QC_TRIALS" with
   | None -> Q.default_trial_count
   | Some x -> Int.of_string x
 

@@ -8,3 +8,8 @@
 
 (cram
  (deps ../examples/parse_fasta.exe))
+
+(env
+ (dev
+  (flags
+   (:standard -w -3))))

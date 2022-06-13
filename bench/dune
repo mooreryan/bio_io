@@ -1,3 +1,3 @@
 (executables
  (names bench_fasta bench_fasta_exe bench_io bench_cigar)
- (libraries core core_bench bio_io))
+ (libraries core core_bench core_unix.command_unix bio_io))

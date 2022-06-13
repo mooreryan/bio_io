@@ -4,7 +4,7 @@ open Share
 
 let () =
   let bench name f = Bench.Test.create ~name (fun () -> f ()) in
-  Command.run
+  Command_unix.run
     (Bench.make_command
        [
          bench "get_record_list" get_record_list;
