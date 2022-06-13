@@ -3,12 +3,12 @@ name: Build and test
 on:
   push:
     branches:
-      - 'main'
-      - 'staging'
+      - "main"
+      - "staging"
 
   pull_request:
     branches:
-      - '*'
+      - "*"
 
 jobs:
   build:
@@ -18,6 +18,7 @@ jobs:
         os:
           - ubuntu-latest
         ocaml-compiler:
+          - 4.14.0
           - 4.13.1
           - 4.12.1
           - 4.11.2
@@ -38,7 +39,7 @@ jobs:
           dune-cache: true
           cache-prefix: v1-${{ matrix.os }}
 
-      - run: opam install . --deps-only --with-doc --with-test
+      - run: opam install ./bio_io.opam --deps-only --with-doc --with-test
 
       - run: opam exec -- make build
 
@@ -47,6 +48,6 @@ jobs:
       - run: opam exec -- make test
 
       - run: opam exec -- make send_coverage
-        if: matrix.ocaml-compiler == '4.12.0'
+        if: matrix.ocaml-compiler == '4.14.0'
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
