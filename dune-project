@@ -24,6 +24,7 @@
  (depends
   (ocaml
    (>= "4.11"))
+  bisect_ppx
   (core
    (>= "v0.15"))
   (core_bench

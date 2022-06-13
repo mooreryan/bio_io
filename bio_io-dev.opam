@@ -9,6 +9,7 @@ bug-reports: "https://github.com/mooreryan/bio_io/issues"
 depends: [
   "dune" {>= "2.8"}
   "ocaml" {>= "4.11"}
+  "bisect_ppx"
   "core" {>= "v0.15"}
   "core_bench" {>= "v0.15"}
   "core_unix" {>= "v0.15"}
