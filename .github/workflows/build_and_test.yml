@@ -42,6 +42,9 @@ jobs:
 
       - run: opam install ./bio_io.opam --deps-only --with-doc --with-test
 
+      # Need this to send the coverage.
+      - run: opam install bisect_ppx
+
       - run: opam exec -- make build
 
       - run: opam exec -- make install
