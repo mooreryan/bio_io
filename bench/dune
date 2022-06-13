@@ -1,5 +1,5 @@
 (executables
  (enabled_if
   (= %{profile} dev))
- (names bench_fasta bench_fasta_exe bench_io bench_cigar)
- (libraries core core_bench core_unix.command_unix bio_io))
+ (names bench_btab bench_cigar bench_fasta bench_fasta_exe bench_io)
+ (libraries core core_bench core_unix.command_unix bio_io test_bio_io))

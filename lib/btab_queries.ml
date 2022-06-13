@@ -38,13 +38,15 @@ module In_channel = struct
         | None, Some _ ->
             (* Need to consume this line right away. *)
             let r = consume_line ic in
-            loop (Some r.query) (r :: hits)
+            loop (Some (Btab.Record.query r)) (r :: hits)
         | Some last_query', None -> mkrecord last_query' hits
         | Some last_query', Some line ->
             (* We need to check if this is a new record or not. *)
             let r = Btab.Record.of_string line in
-            if is_new_query ~last_query:last_query' ~new_query:r.query then
-              mkrecord last_query' hits
+            if
+              is_new_query ~last_query:last_query'
+                ~new_query:(Btab.Record.query r)
+            then mkrecord last_query' hits
             else
               (* Consume this line and loop, because we have more hits for this
                  current query. *)

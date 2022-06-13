@@ -4,7 +4,7 @@
  (inline_tests
   (deps test_files/btab.tsv test_files/bad_btab.tsv))
  (preprocess
-  (pps ppx_assert ppx_inline_test ppx_expect ppx_sexp_conv)))
+  (pps ppx_assert ppx_inline_test ppx_expect ppx_sexp_conv ppx_fields_conv)))
 
 (cram
  (deps ../examples/parse_fasta.exe))
