@@ -38,6 +38,7 @@ jobs:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
           dune-cache: true
           cache-prefix: v1-${{ matrix.os }}
+          opam-local-packages: bio_io.opam
 
       - run: opam install ./bio_io.opam --deps-only --with-doc --with-test
 
