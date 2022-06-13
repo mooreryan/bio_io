@@ -1,3 +1,5 @@
 (executables
+ (enabled_if
+  (= %{profile} dev))
  (names fuzz_fasta_in_channel fuzz_in_channel)
  (libraries base bio_io stdio))

@@ -1,3 +1,5 @@
 (executables
+ (enabled_if
+  (= %{profile} dev))
  (names parse_fasta read_fasta_to_map btab_queries)
  (libraries base bio_io stdio))
