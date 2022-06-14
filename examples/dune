@@ -2,4 +2,6 @@
  (enabled_if
   (= %{profile} dev))
  (names parse_fasta read_fasta_to_map btab_queries)
- (libraries base bio_io stdio))
+ (libraries base bio_io stdio)
+ (preprocess
+  (pps ppx_sexp_conv)))

@@ -37,7 +37,9 @@
     (>= "0.22")
     (< "0.23")))
   (ocaml-lsp-server
-   (>= "1.11"))))
+   (>= "1.11"))
+  (ppx_sexp_conv
+   (>= "v0.15"))))
 
 (package
  (name bio_io)

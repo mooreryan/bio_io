@@ -6,8 +6,16 @@
 
 ### Changed
 
+#### Delimited parsing
+
 - Change record names in the `Btab` module (breaking change)
+- `Btab.Record.t` is now abstract (breaking change)
+- No `sexp` functions on `Btab.Record.t` (breaking change)
 - Drop the `Mmseqs` module (breaking change)
+- Speed up Btab module
+
+#### Other
+
 - Drop `core_kernel` from the tests, add `base_quickcheck` instead
 - Drop `bisect_ppx`, `core`, and `core_bench` from `opam` file. These are now in the `bio_io-dev.opam` file.
 - Drop `re2` in favor of `re`

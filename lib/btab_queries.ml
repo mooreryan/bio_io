@@ -1,14 +1,14 @@
 open! Base
 
 module Record : sig
-  type t [@@deriving sexp]
+  type t
   (** A btab query record. I.e., query name and a list of all [Btab.t] hits. *)
 
   val create : string -> Btab.Record.t list -> t
   val query : t -> string
   val hits : t -> Btab.Record.t list
 end = struct
-  type t = { query : string; hits : Btab.Record.t list } [@@deriving sexp]
+  type t = { query : string; hits : Btab.Record.t list }
 
   let create query hits = { query; hits }
   let query t = t.query

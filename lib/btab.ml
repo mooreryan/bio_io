@@ -1,6 +1,47 @@
 open! Base
 
-module Record = struct
+module Record : sig
+  type t
+
+  val of_string : string -> t
+  val to_string : t -> string
+  val query : t -> string
+  val target : t -> string
+  val pident : t -> float
+  val alnlen : t -> int
+  val mismatch : t -> int
+  val gapopen : t -> int
+  val qstart : t -> int
+  val qend : t -> int
+  val tstart : t -> int
+  val tend : t -> int
+  val evalue : t -> float
+  val bits : t -> float
+  val qlen : t -> int option
+  val tlen : t -> int option
+
+  module Parsed : sig
+    type t = {
+      query : string;
+      target : string;
+      pident : float;
+      alnlen : int;
+      mismatch : int;
+      gapopen : int;
+      qstart : int;
+      qend : int;
+      tstart : int;
+      tend : int;
+      evalue : float;
+      bits : float;
+      qlen : int option;
+      tlen : int option;
+    }
+    [@@deriving sexp]
+  end
+
+  val parse : t -> Parsed.t
+end = struct
   type t = {
     line : string;
     query : int * int;

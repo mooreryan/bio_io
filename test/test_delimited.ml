@@ -31,21 +31,23 @@ let print_string_s s = Stdio.print_s @@ String.sexp_of_t s
 
 let%expect_test "bad Btab" =
   let records = Btab.In_channel.with_file_records "test_files/bad_btab.tsv" in
-  print_s @@ [%sexp_of: Btab.Record.t list Or_error.t] @@ records;
+  (match records with
+  | Error e -> print_endline @@ Error.to_string_hum e
+  | Ok _ -> assert false);
   [%expect
     {|
-    (Error
-     ("Caught exception" (Failure "Bad btab line: 'this is a bad btab file'"))) |}]
+    ("Caught exception" (Failure "Bad btab line: 'this is a bad btab file'")) |}]
 
 let%expect_test "bad Btab.queries" =
   let records =
     Btab_queries.In_channel.with_file_records "test_files/bad_btab.tsv"
   in
-  print_s @@ [%sexp_of: Btab_queries.Record.t list Or_error.t] @@ records;
+  (match records with
+  | Error e -> print_endline @@ Error.to_string_hum e
+  | Ok _ -> assert false);
   [%expect
     {|
-    (Error
-     ("Caught exception" (Failure "Bad btab line: 'this is a bad btab file'"))) |}]
+    ("Caught exception" (Failure "Bad btab line: 'this is a bad btab file'")) |}]
 
 let%expect_test _ =
   let records = Btab.In_channel.with_file_records_exn "test_files/btab.tsv" in
@@ -178,28 +180,21 @@ let%test_unit "New btab parsers matches old btab parser" =
   let equal a b =
     let module A = Btab_orig.Record in
     let module B = Btab.Record in
-    let the_same =
-      String.(A.query a = B.query b && A.target a = B.target b)
-      && Robust.(
-           A.pident a = B.pident b
-           && A.evalue a = B.evalue b
-           && A.bits a = B.bits b)
-      && Int.(
-           A.alnlen a = B.alnlen b
-           && A.mismatch a = B.mismatch b
-           && A.gapopen a = B.gapopen b
-           && A.qstart a = B.qstart b
-           && A.qend a = B.qend b
-           && A.tstart a = B.tstart b
-           && A.qend a = B.qend b)
-      && Option.equal Int.equal (A.qlen a) (B.qlen b)
-      && Option.equal Int.equal (A.tlen a) (B.tlen b)
-    in
-    (* To help diagnose problems in prop tests. *)
-    if not the_same then (
-      print_s @@ A.sexp_of_t a;
-      print_s @@ B.sexp_of_t b);
-    the_same
+    String.(A.query a = B.query b && A.target a = B.target b)
+    && Robust.(
+         A.pident a = B.pident b
+         && A.evalue a = B.evalue b
+         && A.bits a = B.bits b)
+    && Int.(
+         A.alnlen a = B.alnlen b
+         && A.mismatch a = B.mismatch b
+         && A.gapopen a = B.gapopen b
+         && A.qstart a = B.qstart b
+         && A.qend a = B.qend b
+         && A.tstart a = B.tstart b
+         && A.qend a = B.qend b)
+    && Option.equal Int.equal (A.qlen a) (B.qlen b)
+    && Option.equal Int.equal (A.tlen a) (B.tlen b)
   in
   let config = { Q.Test.default_config with test_count = trials } in
   let f btab_line =
