@@ -1,7 +1,12 @@
 (executables
  (enabled_if
   (= %{profile} dev))
- (names parse_fasta read_fasta_to_map btab_queries)
+ (names
+  btab
+  btab_queries
+  fasta_sequence_lengths
+  parse_fasta
+  read_fasta_to_map)
  (libraries base bio_io stdio)
  (preprocess
   (pps ppx_sexp_conv)))
