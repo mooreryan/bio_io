@@ -4,7 +4,7 @@
 
 (cram enable)
 
-(version 0.5.0-preview)
+(version 0.5.0)
 
 (maintainers "Ryan M. Moore")
 

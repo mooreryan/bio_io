@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 0.5.0 (2022-07-08)
+
 ### Added
 
 - Add `Btab_queries` module to process Btab files query-by-query rather than hit-by-hit
