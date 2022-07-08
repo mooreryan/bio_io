@@ -27,26 +27,53 @@ Licensed under the Apache License, Version 2.0 or the MIT license, at
 your option. This program may not be copied, modified, or distributed
 except according to those terms.
 
+{1 Quick Start}
+
+{2 Install}
+
+{[
+opam install bio_io
+]}
+
+{2 Example}
+
+Read a FASTA file and print the ID and sequence length for each record.
+
+{[
+open! Base
+
+let fasta_file = "sequences.fasta"
+
+let () =
+  (* This open gives you [In_channel] and [Record]. *)
+  let open Bio_io.Fasta in
+  In_channel.with_file_iter_records_exn fasta_file ~f:(fun record ->
+      (* Print the ID and the length of the sequence. *)
+      Stdio.printf "%s => %d\n" (Record.id record) (Record.seq_length record))
+]}
+
+
 {1 Overview}
 
 The [Bio_io] library provides input channels that return records.
 
-For an overview see the [Record_in_channel.S] module signature.  In
+For an overview see the {{!Bio_io.Record_in_channel.S}Record_in_channel} module signature.  In
 fact, all the [In_channels] in this library satisfy this signature.
 
-The [Fasta] module provides a [Record] and [In_channel] for reading
-FASTA files.
+The {{!Bio_io.Fasta}Fasta} module provides a {{!Bio_io.Fasta.Record}Record} and
+{{!Bio_io.Fasta.In_channel}In_channel} for reading FASTA files.
 
-There are modules for reading "delimited" files like those output by
-[Btab] and [Mmseqs].
+There are modules for reading "delimited" files like
+{{!Bio_io.Btab}Btab} and {{!Bio_io.Btab_queries}Btab_queries}.
 
 {1 Extending Bio_io}
 
-The [Record_in_channel.Make] functor can be used to make new
-specialized [Record_in_chnanels].  To do so, you need a module that
-satisfies the [Record_in_channel.In_channel_input_record] signature.
-[Bio_io] has a couple of In_channel types in the [Private] module you
-can use for this, and then add in the [input_record_exn] function.
+The {{!Bio_io.Record_in_channel.Make}Record_in_channel.Make} functor can be used to make new
+specialized records and input channels.  To do so, you need a module
+that satisfies the {{!Bio_io.Record_in_channel.In_channel_input_record}In_channel_input_record}
+signature.  [Bio_io] has a couple of [In_channel] types in the
+{{!Bio_io.Private}Private} module you can use for this, and then add in the
+[input_record_exn] function.
 
-For examples of this, see the definitions of [Fasta.In_channel] and
-[Mmseqs.In_channel].
+For examples, see the definitions of {{!Bio_io.Fasta.In_channel}Fasta.In_channel} and
+{{!Bio_io.Btab.In_channel}Btab.In_channel}.

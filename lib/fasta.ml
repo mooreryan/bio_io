@@ -1,3 +1,5 @@
+(** Parsing FASTA files *)
+
 open! Base
 
 (** A record type for FASTA files.

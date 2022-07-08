@@ -1,3 +1,5 @@
+(** Internally used modules *)
+
 open! Base
 
 (** Alternate interface to [Stdio.In_channel]. The [create] and [with_file]

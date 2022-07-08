@@ -1,3 +1,5 @@
+(** Mishmosh of internal helper functions *)
+
 open! Base
 
 let try0 f =

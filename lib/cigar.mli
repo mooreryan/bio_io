@@ -1,5 +1,4 @@
-(** A module for parsing CIGAR (Concise Idiosyncratic Gapped Alignment Report)
-    strings.
+(** Parsing CIGAR (Concise Idiosyncratic Gapped Alignment Report) strings
 
     {1 Overview}
 

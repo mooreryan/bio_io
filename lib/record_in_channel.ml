@@ -1,3 +1,5 @@
+(** Functor and module types for creating record-based input channels *)
+
 open! Base
 
 (** An input channel for reading (biological) records.
