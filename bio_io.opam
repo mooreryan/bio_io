@@ -23,8 +23,6 @@ depends: [
   "re" {>= "1.10" & with-test}
   "odoc" {with-doc}
 ]
-dev-repo: "git+https://github.com/mooreryan/bio_io.git"
-license: ["MIT" "Apache-2.0"]
 build: [
   ["dune" "subst"] {dev}
   [
@@ -35,7 +33,9 @@ build: [
     "-j"
     jobs
     "@install"
-    "@runtest" {with-test & arch != "x86_32"}
+    "@runtest" {with-test}
     "@doc" {with-doc}
   ]
 ]
+dev-repo: "git+https://github.com/mooreryan/bio_io.git"
+license: ["MIT" "Apache-2.0"]
