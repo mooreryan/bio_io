@@ -4,12 +4,13 @@ on:
   push:
     branches:
       - "main"
+      - "docs"
 
 jobs:
   docs:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/mooreryan/bio_io_generate_docs:e306427
+      image: ghcr.io/mooreryan/bio_io_generate_docs:57919e9
 
     steps:
       - name: Checkout code
