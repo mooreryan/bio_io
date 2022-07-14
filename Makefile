@@ -3,8 +3,11 @@ BENCH_D = bench
 DOCS_D = _docs
 TEST_COV_D = /tmp/bio_io
 
-.PHONY: all
-all: build install
+.PHONY: all_dev
+all_dev: clean build_dev test_dev
+
+.PHONY: all_release
+all_release: clean build_release test_release
 
 .PHONY: bench
 bench: bench_io bench_fasta bench_fasta_exe
@@ -27,8 +30,12 @@ bench_io:
 	  BENCH_IO_INFILE=$(BENCH_D)/seqs.10000.faa \
 	  dune exec ./bench/bench_io.exe 2> /dev/null
 
-.PHONY: build
-build:
+.PHONY: build_dev
+build_dev:
+	dune build --profile=dev
+
+.PHONY: build_release
+build_release:
 	dune build --profile=release
 
 .PHONY: check
@@ -50,13 +57,13 @@ docs_site:
 	  mv _build/default/_doc/_html $(DOCS_D) && \
 	  chmod 755 $(DOCS_D)
 
-.PHONY: everything
-everything: clean build test_coverage_open docs install
-	@echo "EVERYTHING!!!"
+.PHONY: install_dev
+install_dev:
+	dune install --profile=dev
 
-.PHONY: install
-install: build
-	dune install
+.PHONY: install_release
+install_release:
+	dune install --profile=release
 
 .PHONY: promote
 promote:
@@ -66,9 +73,13 @@ promote:
 uninstall:
 	dune uninstall
 
-.PHONY: test
-test:
-	dune runtest
+.PHONY: test_dev
+test_dev:
+	dune runtest --profile=dev
+
+.PHONY: test_release
+test_release:
+	dune runtest --profile=release
 
 .PHONY: test_coverage
 test_coverage:
@@ -84,5 +95,5 @@ test_coverage_open: test_coverage
 	$(BROWSER) _coverage/index.html
 
 .PHONY: send_coverage
-send_coverage: test_coverage
+send_coverage: clean test_coverage
 	bisect-ppx-report send-to Coveralls --coverage-path $(TEST_COV_D)

@@ -37,15 +37,23 @@ jobs:
 
       - run: opam install ./bio_io.opam --deps-only --with-doc --with-test
 
-      # Need this to send the coverage.
+      # Check the dev profile.
+      - run: opam exec -- make clean
+      - run: opam exec -- make build_dev
+      - run: opam exec -- make test_dev
+      - run: opam exec -- make install_dev
+
+      # Check the release profile.
+      - run: opam exec -- make clean
+      - run: opam exec -- make build_release
+      - run: opam exec -- make test_release
+      - run: opam exec -- make install_release
+
+      # Install bisect_ppx if we are sending coverage.
       - run: opam install bisect_ppx
+        if: matrix.ocaml-compiler == '4.14.0'
 
-      - run: opam exec -- make build
-
-      - run: opam exec -- make install
-
-      - run: opam exec -- make test
-
+      # Send the coverage.
       - run: opam exec -- make send_coverage
         if: matrix.ocaml-compiler == '4.14.0'
         env:
