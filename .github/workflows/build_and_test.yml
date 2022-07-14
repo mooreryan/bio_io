@@ -36,6 +36,7 @@ jobs:
           opam-local-packages: bio_io.opam
 
       - run: opam install ./bio_io.opam --deps-only --with-doc --with-test
+      - run: opam install ./bio_io-dev.opam --deps-only --with-doc --with-test
 
       # Check the dev profile.
       - run: opam exec -- make clean
