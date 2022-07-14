@@ -53,7 +53,7 @@ jobs:
           opam exec -- make build_dev
           opam exec -- make test_dev
           opam exec -- make install_dev
-        if: matrix.ocaml-compiler == '4.14.0' || matrix.ocaml-compiler == '4.11.2'
+        if: matrix.ocaml-compiler == '4.14.0'
 
       # Send the coverage.
       - name: Send coverage
