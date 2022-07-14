@@ -24,7 +24,7 @@
  (allow_empty)
  (depends
   (ocaml
-   (>= "4.11"))
+   (>= "4.14"))
   bisect_ppx
   (core
    (>= "v0.15"))
