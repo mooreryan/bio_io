@@ -19,6 +19,7 @@ jobs:
           - ubuntu-latest
         ocaml-compiler:
           - 4.14.0
+          - 4.11.2
           - 4.10.2
 
     runs-on: ${{ matrix.os }}
@@ -36,26 +37,29 @@ jobs:
           opam-local-packages: bio_io.opam
 
       - run: opam install ./bio_io.opam --deps-only --with-doc --with-test
-      - run: opam install ./bio_io-dev.opam --deps-only --with-doc --with-test
 
-      # Check the dev profile.
-      - run: opam exec -- make clean
-      - run: opam exec -- make build_dev
-      - run: opam exec -- make test_dev
-      - run: opam exec -- make install_dev
+      - name: Check release profile
+        run: |
+          opam exec -- make clean
+          opam exec -- make build_release
+          opam exec -- make test_release
+          opam exec -- make install_release
+        if: matrix.ocaml-compiler == '4.14.0' || matrix.ocaml-compiler == '4.10.2'
 
-      # Check the release profile.
-      - run: opam exec -- make clean
-      - run: opam exec -- make build_release
-      - run: opam exec -- make test_release
-      - run: opam exec -- make install_release
-
-      # Install bisect_ppx if we are sending coverage.
-      - run: opam install bisect_ppx
-        if: matrix.ocaml-compiler == '4.14.0'
+      - name: Check dev profile
+        run: |
+          opam install ./bio_io-dev.opam --deps-only --with-doc --with-test
+          opam exec -- make clean
+          opam exec -- make build_dev
+          opam exec -- make test_dev
+          opam exec -- make install_dev
+        if: matrix.ocaml-compiler == '4.14.0' || matrix.ocaml-compiler == '4.11.2'
 
       # Send the coverage.
-      - run: opam exec -- make send_coverage
+      - name: Send coverage
+        run: |
+          opam install bisect_ppx
+          opam exec -- make send_coverage
         if: matrix.ocaml-compiler == '4.14.0'
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
