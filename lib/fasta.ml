@@ -241,23 +241,19 @@ end = struct
     let clean_sequence s = String.filter s ~f:(fun c -> Char.(c <> ' '))
 
     let parse_header_line line =
-      if String.is_prefix line ~prefix:">" then
-        match
-          String.split ~on:' '
-          @@ String.chop_prefix_exn ~prefix:">"
-          @@ String.strip line
-        with
-        (* Empty header lines get id = "" *)
-        | [ id ] -> Record.create ~id ~desc:None ~seq:""
-        | id :: desc ->
-            Record.create ~id ~desc:(Some (String.concat ~sep:" " desc)) ~seq:""
-        | [] ->
-            (* String.split should at least give [""]. Should never get here. *)
-            assert false
-      else
-        failwith
-        @@ Printf.sprintf "Header line should start with '>'.  Got: '%s'"
-        @@ String.prefix line 0
+      assert (String.is_prefix line ~prefix:">");
+      match
+        String.split ~on:' '
+        @@ String.chop_prefix_exn ~prefix:">"
+        @@ String.strip line
+      with
+      (* Empty header lines get id = "" *)
+      | [ id ] -> Record.create ~id ~desc:None ~seq:""
+      | id :: desc ->
+          Record.create ~id ~desc:(Some (String.concat ~sep:" " desc)) ~seq:""
+      | [] ->
+          (* String.split should at least give [""]. Should never get here. *)
+          assert false
 
     let input_record chan =
       let rec loop thing =

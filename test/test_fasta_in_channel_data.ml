@@ -60,3 +60,5 @@ ACTG
 >
 actg
 |eof}
+
+let empty = ""

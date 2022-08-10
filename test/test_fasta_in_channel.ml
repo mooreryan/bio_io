@@ -1,3 +1,7 @@
+(* Note: most of the excersising of the Record_in_chanel is here. In other
+   modules created with the functor, you mainly just need to test if the record
+   list works as it should. *)
+
 open! Base
 open Bio_io
 module Filename = Caml.Filename
@@ -564,3 +568,13 @@ let%expect_test _ =
   print_endline (Sexp.to_string_hum ([%sexp_of: Fasta.Record.t List.t] records));
   [%expect
     {| (((id "") (desc ()) (seq ACTG)) ((id "") (desc ()) (seq actg))) |}]
+
+let%expect_test _ =
+  let open Fasta in
+  let name, _chan = write_tmp_file Test_fasta_in_channel_data.empty in
+  let l = Or_error.try_with (fun () -> In_channel.with_file_records name) in
+  print_endline @@ Sexp.to_string_hum
+  @@ [%sexp_of: Fasta.Record.t List.t Or_error.t] l;
+  [%expect
+    {|
+    (Ok ()) |}]
