@@ -83,3 +83,17 @@ let%test "if spaces are in the sequence, they are counted as part of the length"
     =
   let r = R.create ~id:"apple" ~desc:None ~seq:"a a" in
   Int.(3 = R.seq_length r)
+
+let%test_unit "reverse complement" =
+  let seq = "ATUGCYRSWKMBDHVNatugcyrswkmbdhvn!@#$%" in
+  let comp = "TAACGRYSWMKVHDBNtaacgryswmkvhdbn!@#$%" in
+  let rev_seq = String.rev seq in
+  let rev_comp = "%$#@!nbdhvkmwsyrgcaatNBDHVKMWSYRGCAAT" in
+  let r = R.create ~seq ~id:"" ~desc:None in
+  let r_comp = R.comp r in
+  let r_rev = R.rev r in
+  let r_rev_comp = R.rev_comp r in
+
+  assert (String.(comp = R.seq r_comp));
+  assert (String.(rev_seq = R.seq r_rev));
+  assert (String.(rev_comp = R.seq r_rev_comp))

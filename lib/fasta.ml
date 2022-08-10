@@ -117,6 +117,20 @@ module Record : sig
   val with_desc : string option -> t -> t
   (** [with_desc new_desc t] returns a [t] with [new_desc] instead of the
       original [desc]. *)
+
+  val rev : t -> t
+  (** [rev t] returns the reverse of [t]. I.e., the [seq] is reversed reversed. *)
+
+  val comp : t -> t
+  (** [comp t] returns the complement of [t]. I.e., the [seq] is complemented.
+      Uses IUPAC conventions. Any "base" (char) that isn't part of the IUPAC
+      passes through unchanged. Note that [comp] does not round-trip. *)
+
+  val rev_comp : t -> t
+  (** [rev_comp t] returns the reverse complement of [t]. I.e., the [seq] is
+      reverse complemented. Uses IUPAC conventions. Any "base" (char) that isn't
+      part of the IUPAC passes through unchanged. Note that [rev_comp] does not
+      round-trip. *)
 end = struct
   type t = { id : string; desc : string option; seq : string } [@@deriving sexp]
 
@@ -142,6 +156,9 @@ end = struct
   let with_id id r = { r with id }
   let with_seq seq r = { r with seq }
   let with_desc desc r = { r with desc }
+  let rev t = t |> with_seq (String.rev t.seq)
+  let comp t = t |> with_seq (Utils.complement t.seq)
+  let rev_comp t = t |> with_seq (Utils.rev_complement t.seq)
 end
 
 (** [In_channel] for FASTA records. For more general info, see the

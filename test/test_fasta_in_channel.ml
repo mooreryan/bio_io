@@ -575,6 +575,5 @@ let%expect_test _ =
   let l = Or_error.try_with (fun () -> In_channel.with_file_records name) in
   print_endline @@ Sexp.to_string_hum
   @@ [%sexp_of: Fasta.Record.t List.t Or_error.t] l;
-  [%expect
-    {|
+  [%expect {|
     (Ok ()) |}]

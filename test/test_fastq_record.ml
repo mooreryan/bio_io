@@ -149,3 +149,24 @@ let%expect_test "basic field access" =
     b
     +
     . |}]
+
+let%test_unit "reverse complement" =
+  let seq = "ATUGCYRSWKMBDHVNatugcyrswkmbdhvn!@#$%" in
+  let comp = "TAACGRYSWMKVHDBNtaacgryswmkvhdbn!@#$%" in
+  let rev_seq = String.rev seq in
+  let qual = "1234123412341234123412341234123412341" in
+  let rev_qual = String.rev qual in
+  let rev_comp = "%$#@!nbdhvkmwsyrgcaatNBDHVKMWSYRGCAAT" in
+  let r = R.create ~seq ~qual ~id:"" ~desc:None ~extra:None in
+  let r_comp = R.comp r in
+  let r_rev = R.rev r in
+  let r_rev_comp = R.rev_comp r in
+
+  assert (String.(comp = R.seq r_comp));
+  assert (String.(qual = R.qual r_comp));
+
+  assert (String.(rev_seq = R.seq r_rev));
+  assert (String.(rev_qual = R.qual r_rev));
+
+  assert (String.(rev_comp = R.seq r_rev_comp));
+  assert (String.(rev_qual = R.qual r_rev_comp))

@@ -106,6 +106,21 @@ module Record : sig
   val with_extra : string option -> t -> t
   (** [with_extra new_extra t] returns a [t] with [new_extra] instead of the
       original [extra]. *)
+
+  val rev : t -> t
+  (** [rev t] returns the reverse of [t]. I.e., the [seq] and the [qual] are
+      reversed. *)
+
+  val comp : t -> t
+  (** [comp t] returns the complement of [t]. I.e., the [seq] is complemented.
+      Uses IUPAC conventions. Any "base" (char) that isn't part of the IUPAC
+      passes through unchanged. Note that [comp] does not round-trip. *)
+
+  val rev_comp : t -> t
+  (** [rev_comp t] returns the reverse complement of [t]. I.e., the [seq] is
+      reverse complemented, and the quality score is reversed to match it. Uses
+      IUPAC conventions. Any "base" (char) that isn't part of the IUPAC passes
+      through unchanged. Note that [rev_comp] does not round-trip. *)
 end = struct
   type t = {
     id : string;
@@ -146,6 +161,11 @@ end = struct
   let with_desc desc r = { r with desc }
   let with_qual qual r = { r with qual }
   let with_extra extra r = { r with extra }
+  let rev t = t |> with_seq (String.rev t.seq) |> with_qual (String.rev t.qual)
+  let comp t = t |> with_seq (Utils.complement t.seq)
+
+  let rev_comp t =
+    t |> with_seq (Utils.rev_complement t.seq) |> with_qual (String.rev t.qual)
 end
 
 (** [In_channel] for FASTQ records.
