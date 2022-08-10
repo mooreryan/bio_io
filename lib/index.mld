@@ -60,8 +60,8 @@ The [Bio_io] library provides input channels that return records.
 For an overview see the {{!Bio_io.Record_in_channel.S}Record_in_channel} module signature.  In
 fact, all the [In_channels] in this library satisfy this signature.
 
-The {{!Bio_io.Fasta}Fasta} module provides a {{!Bio_io.Fasta.Record}Record} and
-{{!Bio_io.Fasta.In_channel}In_channel} for reading FASTA files.
+The {{!Bio_io.Fasta}Fasta} and {{!Bio_io.Fastq}Fastq} modules provide 
+[Record] and [In_channel]s for reading FASTA and FASTQ files.
 
 There are modules for reading "delimited" files like
 {{!Bio_io.Btab}Btab} and {{!Bio_io.Btab_queries}Btab_queries}.
@@ -75,5 +75,6 @@ signature.  [Bio_io] has a couple of [In_channel] types in the
 {{!Bio_io.Private}Private} module you can use for this, and then add in the
 [input_record] function.
 
-For examples, see the definitions of {{!Bio_io.Fasta.In_channel}Fasta.In_channel} and
+For examples, see the definitions of {{!Bio_io.Fasta.In_channel}Fasta.In_channel}, 
+{{!Bio_io.Fastq.In_channel}Fastq.In_channel}, and
 {{!Bio_io.Btab.In_channel}Btab.In_channel}.
