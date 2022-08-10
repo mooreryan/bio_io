@@ -5,6 +5,7 @@
   btab
   btab_queries
   fasta_sequence_lengths
+  fasta_stdin
   parse_fasta
   read_fasta_to_map)
  (libraries base bio_io stdio)

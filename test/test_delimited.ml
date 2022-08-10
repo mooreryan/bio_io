@@ -30,27 +30,27 @@ let write_tmp_file data =
 let print_string_s s = Stdio.print_s @@ String.sexp_of_t s
 
 let%expect_test "bad Btab" =
-  let records = Btab.In_channel.with_file_records "test_files/bad_btab.tsv" in
-  (match records with
-  | Error e -> print_endline @@ Error.to_string_hum e
-  | Ok _ -> assert false);
+  let records =
+    Or_error.try_with (fun () ->
+        Btab.In_channel.with_file_records "test_files/bad_btab.tsv")
+  in
+  Stdio.print_s @@ [%sexp_of: Btab.Record.t list Or_error.t] records;
   [%expect
     {|
-    ("Caught exception" (Failure "Bad btab line: 'this is a bad btab file'")) |}]
+    (Error (Failure "Bad btab line: 'this is a bad btab file'")) |}]
 
 let%expect_test "bad Btab.queries" =
   let records =
-    Btab_queries.In_channel.with_file_records "test_files/bad_btab.tsv"
+    Or_error.try_with (fun () ->
+        Btab_queries.In_channel.with_file_records "test_files/bad_btab.tsv")
   in
-  (match records with
-  | Error e -> print_endline @@ Error.to_string_hum e
-  | Ok _ -> assert false);
+  Stdio.print_s @@ [%sexp_of: Btab_queries.Record.t list Or_error.t] records;
   [%expect
     {|
-    ("Caught exception" (Failure "Bad btab line: 'this is a bad btab file'")) |}]
+    (Error (Failure "Bad btab line: 'this is a bad btab file'")) |}]
 
 let%expect_test _ =
-  let records = Btab.In_channel.with_file_records_exn "test_files/btab.tsv" in
+  let records = Btab.In_channel.with_file_records "test_files/btab.tsv" in
   let records = List.map records ~f:Btab.Record.parse in
   print_s @@ [%sexp_of: Btab.Record.Parsed.t list] @@ records;
   [%expect
@@ -67,7 +67,7 @@ let%expect_test _ =
 
 let%expect_test _ =
   let records =
-    Btab_queries.In_channel.with_file_records_exn "test_files/btab.tsv"
+    Btab_queries.In_channel.with_file_records "test_files/btab.tsv"
   in
   let records =
     List.map records ~f:(fun record ->
@@ -92,7 +92,7 @@ let%expect_test _ =
         (bits 30) (qlen ()) (tlen ()))))) |}]
 
 let%expect_test _ =
-  Btab_queries.In_channel.with_file_iter_records_exn "test_files/btab.tsv"
+  Btab_queries.In_channel.with_file_iter_records "test_files/btab.tsv"
     ~f:(fun r ->
       print_endline "===";
       print_endline @@ Btab_queries.Record.query r;
@@ -241,7 +241,7 @@ end = struct
 
     type record = Silly_record.t
 
-    let input_record_exn ic =
+    let input_record ic =
       Option.map ~f:Silly_record.of_string @@ Stdio.In_channel.input_line ic
   end
 

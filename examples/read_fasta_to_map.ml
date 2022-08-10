@@ -12,7 +12,7 @@ let parse_argv () =
 let () =
   let file_name = parse_argv () in
   let _seq_map =
-    In_channel.with_file_fold_records_exn file_name
+    In_channel.with_file_fold_records file_name
       ~init:(Map.empty (module String))
       ~f:(fun m r ->
         let open Record in

@@ -4,7 +4,7 @@
 
 (cram enable)
 
-(version 0.5.1)
+(version 0.6.0-SNAPSHOT)
 
 (maintainers "Ryan M. Moore")
 

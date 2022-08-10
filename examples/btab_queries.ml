@@ -8,7 +8,7 @@ let parse_argv () =
 
 let () =
   let file_name = parse_argv () in
-  In_channel.with_file_iter_records_exn file_name ~f:(fun r ->
+  In_channel.with_file_iter_records file_name ~f:(fun r ->
       Stdio.print_endline "===";
       Stdio.print_endline @@ Record.query r;
       let hits = List.map ~f:Bio_io.Btab.Record.parse @@ Record.hits r in

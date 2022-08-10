@@ -20,7 +20,7 @@
 
       let () =
         let open Bio_io.Btab in
-        In_channel.with_file_iter_records_exn file_name ~f:(fun r ->
+        In_channel.with_file_iter_records file_name ~f:(fun r ->
             Stdio.printf "%s => %s (%.3f)\n" (Record.query r) (Record.target r)
               (Record.bits r))
     ]} *)
@@ -44,7 +44,7 @@ open! Base
 module Record : sig
   (** {1 API} *)
 
-  type t
+  type t [@@deriving sexp_of]
 
   (** {2 Creating records} *)
 
@@ -373,7 +373,7 @@ end = struct
 
     type record = Record.t
 
-    let input_record_exn ic = Option.map ~f:Record.of_string @@ input_line ic
+    let input_record ic = Option.map ~f:Record.of_string @@ input_line ic
   end
 
   include T

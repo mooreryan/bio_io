@@ -15,7 +15,7 @@ open! Base
 module Record : sig
   (** {1 API} *)
 
-  type t
+  type t [@@deriving sexp_of]
   (** A btab query record. I.e., query name and a list of all [Btab.t] hits. *)
 
   (** {2 Creating} *)
@@ -33,7 +33,7 @@ module Record : sig
   val hits : t -> Btab.Record.t list
   (** [hits t] returns the list of hits associated with this query sequence. *)
 end = struct
-  type t = { query : string; hits : Btab.Record.t list }
+  type t = { query : string; hits : Btab.Record.t list } [@@deriving sexp_of]
 
   let create query hits = { query; hits }
   let query t = t.query
@@ -67,7 +67,7 @@ end
 
       let () =
         let file_name = parse_argv () in
-        In_channel.with_file_iter_records_exn file_name ~f:(fun r ->
+        In_channel.with_file_iter_records file_name ~f:(fun r ->
             Stdio.print_endline "===";
             Stdio.print_endline @@ Record.query r;
             let hits = List.map ~f:Bio_io.Btab.Record.parse @@ Record.hits r in
@@ -100,7 +100,7 @@ module In_channel = struct
     (* TODO put somewhere in the docs that this assumes that the queries are
        sorted. One specific case in which they are not is with mmseqs searches
        with multiple iterations. *)
-    let input_record_exn ic =
+    let input_record ic =
       let consume_line ic =
         Btab.Record.of_string @@ input_line_exn ~fix_win_eol:true ic
       in

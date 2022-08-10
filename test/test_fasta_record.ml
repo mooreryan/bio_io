@@ -35,68 +35,37 @@ let%expect_test _ =
   |> Fasta.Record.sexp_of_t |> print_sexp;
   [%expect {| ((id "a r") (desc (b)) (seq actg)) |}]
 
-let%expect_test _ =
-  let result = Fasta.Record.of_header "" in
-  print_endline
-  @@ Sexp.to_string_hum ~indent:1 ([%sexp_of: Fasta.Record.t Or_error.t] result);
-  [%expect
-    {|
-    (Error
-     ("Caught exception" (Failure "Header line should start with '>'.  Got: ''")))
-  |}]
+(* let%test _ = String.equal (Fasta.Record.of_header_exn ">apple" |>
+   Fasta.Record.id) "apple"
 
-let%test _ =
-  String.equal (Fasta.Record.of_header_exn ">apple" |> Fasta.Record.id) "apple"
+   let%test _ = Fasta.Record.equal (Or_error.ok_exn @@ Fasta.Record.of_header
+   ">") (Fasta.Record.create ~id:"" ~desc:None ~seq:"")
 
-let%test _ =
-  Fasta.Record.equal
-    (Or_error.ok_exn @@ Fasta.Record.of_header ">")
-    (Fasta.Record.create ~id:"" ~desc:None ~seq:"")
+   let%test _ = Fasta.Record.equal (Or_error.ok_exn @@ Fasta.Record.of_header
+   ">apple") (Fasta.Record.create ~id:"apple" ~desc:None ~seq:"")
 
-let%test _ =
-  Fasta.Record.equal
-    (Or_error.ok_exn @@ Fasta.Record.of_header ">apple")
-    (Fasta.Record.create ~id:"apple" ~desc:None ~seq:"")
+   let%test _ = Fasta.Record.equal (Fasta.Record.of_header_exn ">apple" |>
+   Fasta.Record.with_desc None) (Fasta.Record.create ~id:"apple" ~desc:None
+   ~seq:"")
 
-let%test _ =
-  Fasta.Record.equal
-    (Fasta.Record.of_header_exn ">apple" |> Fasta.Record.with_desc None)
-    (Fasta.Record.create ~id:"apple" ~desc:None ~seq:"")
+   let%test _ = Fasta.Record.equal (Fasta.Record.of_header_exn ">apple" |>
+   Fasta.Record.with_seq "A" |> Fasta.Record.with_desc (Some "B"))
+   (Fasta.Record.create ~id:"apple" ~desc:(Some "B") ~seq:"A")
 
-let%test _ =
-  Fasta.Record.equal
-    (Fasta.Record.of_header_exn ">apple"
-    |> Fasta.Record.with_seq "A"
-    |> Fasta.Record.with_desc (Some "B"))
-    (Fasta.Record.create ~id:"apple" ~desc:(Some "B") ~seq:"A")
+   let%test _ = Fasta.Record.equal (Or_error.ok_exn @@ Fasta.Record.of_header
+   ">apple pie") (Fasta.Record.create ~id:"apple" ~desc:(Some "pie") ~seq:"")
 
-let%test _ =
-  Fasta.Record.equal
-    (Or_error.ok_exn @@ Fasta.Record.of_header ">apple pie")
-    (Fasta.Record.create ~id:"apple" ~desc:(Some "pie") ~seq:"")
+   let%test _ = Fasta.Record.equal (Fasta.Record.of_header_exn ">APPLE pie")
+   (Fasta.Record.of_header_exn ">apple pie" |> Fasta.Record.with_id "APPLE")
 
-let%test _ =
-  Fasta.Record.equal
-    (Fasta.Record.of_header_exn ">APPLE pie")
-    (Fasta.Record.of_header_exn ">apple pie" |> Fasta.Record.with_id "APPLE")
+   let%test _ = not ((Or_error.equal Fasta.Record.equal) (Fasta.Record.of_header
+   ">apple pie") (Fasta.Record.of_header ""))
 
-let%test _ =
-  not
-    ((Or_error.equal Fasta.Record.equal)
-       (Fasta.Record.of_header ">apple pie")
-       (Fasta.Record.of_header ""))
+   let%test _ = not ((Or_error.equal Fasta.Record.equal) (Fasta.Record.of_header
+   ">apple pie") (Fasta.Record.of_header ">"))
 
-let%test _ =
-  not
-    ((Or_error.equal Fasta.Record.equal)
-       (Fasta.Record.of_header ">apple pie")
-       (Fasta.Record.of_header ">"))
-
-let%test _ =
-  not
-    ((Or_error.equal Fasta.Record.equal)
-       (Fasta.Record.of_header ">apple pie")
-       (Fasta.Record.of_header ">apple"))
+   let%test _ = not ((Or_error.equal Fasta.Record.equal) (Fasta.Record.of_header
+   ">apple pie") (Fasta.Record.of_header ">apple")) *)
 
 (* Sequence length *)
 let%test _ =

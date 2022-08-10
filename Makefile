@@ -10,25 +10,30 @@ all_dev: clean build_dev test_dev
 all_release: clean build_release test_release
 
 .PHONY: bench
-bench: bench_io bench_fasta bench_fasta_exe
+bench: bench_io bench_cigar bench_fasta bench_fasta_exe
 
 .PHONY: bench_fasta
 bench_fasta:
-	dune build --profile=release && \
+	dune build && \
 	  BENCH_FASTA_INFILE=$(BENCH_D)/seqs.10000.faa \
 	  dune exec ./bench/bench_fasta.exe 2> /dev/null
 
 .PHONY: bench_fasta_exe
 bench_fasta_exe:
-	dune build --profile=release && \
+	dune build && \
 	  BENCH_FASTA_INFILE=$(BENCH_D)/seqs.10000.faa \
 	  hyperfine -w 30 './_build/default/bench/bench_fasta_exe.exe 2> /dev/null'
 
 .PHONY: bench_io
 bench_io:
-	dune build --profile=release && \
+	dune build && \
 	  BENCH_IO_INFILE=$(BENCH_D)/seqs.10000.faa \
 	  dune exec ./bench/bench_io.exe 2> /dev/null
+
+.PHONY: bench_cigar
+bench_cigar:
+	dune build && \
+	  dune exec ./bench/bench_cigar.exe 2> /dev/null
 
 .PHONY: build_dev
 build_dev:

@@ -5,7 +5,7 @@ let make_cigar () =
   let n = Random.int 100 in
   List.range 0 n
   |> List.map ~f:(fun _ ->
-         let count = Random.int 1000 in
+         let count = 1 + Random.int 1000 in
          let op = Array.random_element_exn [| "M"; "D"; "I" |] in
          Int.to_string count ^ op)
   |> String.concat ~sep:""

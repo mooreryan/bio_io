@@ -19,9 +19,14 @@ open! Base
     Then you would get a [record] something like this:
 
     {[
-      Fasta.Record.id record (* "s1" *) Fasta.Record.desc record
-        (* Some "apple pie" *) Fasta.Record.seq record
+      (* "s1" *)
+      Fasta.Record.id record;;
+
+      (* Some "apple pie" *)
+      Fasta.Record.desc record;;
+
       (* "ACTGactg" *)
+      Fasta.Record.seq record
     ]}
 
     {2 Example 2}
@@ -37,9 +42,14 @@ open! Base
     Then you would get a [record] something like this:
 
     {[
-      Fasta.Record.id record (* "s1" *) Fasta.Record.desc record (* None *)
-        Fasta.Record.seq record
+      (* "s1" *)
+      Fasta.Record.id record;;
+
+      (* None *)
+      Fasta.Record.desc record;;
+
       (* "ACTGactg" *)
+      Fasta.Record.seq record
     ]}
 
     {2 Example 3}
@@ -60,15 +70,6 @@ module Record : sig
   (** [create ~id ~desc ~seq] creates a new [t]. Shouldn't raise as literally
       any values of the correct type are accepted. *)
 
-  val of_header_exn : string -> t
-  (** [of_header_exn header] returns a [t] from a FASTA header. May raise
-      exceptions. Used internally for parsing FASTA files, but the code
-      consuming the [bio_io] module probably won't need to use this function. *)
-
-  val of_header : string -> t Or_error.t
-  (** [of_header header] is like [of_header_exn header] except that it returns
-      [Or_error.t] rather than raising exceptions. *)
-
   val to_string : t -> string
   (** [to_string t] returns a string representation of [t] ready to print to a
       FASTA output file. *)
@@ -77,9 +78,6 @@ module Record : sig
   (** [to_string_nl t ~nl] returns a string representation of [t] ready to print
       to a FASTA output file, including a trailing newline (nl) string. [nl]
       defaults to ["\n"]. *)
-
-  val serialize : t -> string
-  (** [serialize t] returns the [Sexp] of [t] as a string. *)
 
   val equal : t -> t -> bool
   (** [equal this other] returns [true] if all fields of two [t]s are the same. *)
@@ -124,34 +122,12 @@ end = struct
 
   let create ~id ~desc ~seq = { id; desc; seq }
 
-  let of_header_exn s =
-    if String.is_prefix s ~prefix:">" then
-      match
-        String.split ~on:' '
-        @@ String.chop_prefix_exn ~prefix:">"
-        @@ String.strip s
-      with
-      (* Empty header lines get id = "" *)
-      | [ id ] -> { id; desc = None; seq = "" }
-      | id :: desc ->
-          { id; desc = Some (String.concat ~sep:" " desc); seq = "" }
-      | [] ->
-          (* String.split should at least give [""]. Should never get here. *)
-          assert false
-    else
-      failwith
-      @@ Printf.sprintf "Header line should start with '>'.  Got: '%s'"
-      @@ String.prefix s 0
-
-  let of_header s = Utils.try1 of_header_exn s
-
   let to_string r =
     match r.desc with
     | None -> Printf.sprintf ">%s\n%s" r.id r.seq
     | Some desc -> Printf.sprintf ">%s %s\n%s" r.id desc r.seq
 
   let to_string_nl ?(nl = "\n") r = to_string r ^ nl
-  let serialize r = Sexp.to_string_hum (sexp_of_t r)
 
   let equal r1 r2 =
     String.(r1.id = r2.id)
@@ -175,22 +151,8 @@ end
 
     {2 Return all records in a list}
 
-    Simplest way. May raise exceptions.
-
     {[
-      let records = Fasta.In_channel.with_file_records_exn fname
-    ]}
-
-    A bit more involved, but you won't get exceptions. Instead, you have to
-    handle the [Or_error.t].
-
-    {[
-      let records =
-        match Fasta.In_channel.with_file_records name with
-        | Error err ->
-            eprintf "Problem reading records: %s\n" (Error.to_string_hum err);
-            exit 1
-        | Ok records -> records
+      let records = Fasta.In_channel.with_file_records fname
     ]}
 
     {2 Iterating over records}
@@ -202,7 +164,7 @@ end
 
     {[
       let () =
-        Fasta.In_channel.with_file_iter_records_exn "sequences.fasta"
+        Fasta.In_channel.with_file_iter_records "sequences.fasta"
           ~f:(fun record ->
             let open Fasta.Record in
             printf "%s => %d\n" (id record) (seq_length record))
@@ -215,11 +177,10 @@ end
 
     {[
       let () =
-        Fasta.In_channel.with_file_iteri_records_exn "sequences.fasta"
-          ~f:(fun index record ->
+        Fasta.In_channel.with_file_iteri_records "sequences.fasta"
+          ~f:(fun i record ->
             let open Fasta.Record in
-            printf "%d: %s => %d\n" (index + 1) (id record)
-              (seq_length record)
+            printf "%d: %s => %d\n" (i + 1) (id record) (seq_length record))
     ]}
 
     {2 Folding over records}
@@ -229,28 +190,10 @@ end
 
     Get total length of all sequences in the file.
 
-    Watch out as this may raise exceptions...see the [_exn] suffix.
-
     {[
       let total_length =
-        Fasta.In_channel.with_file_fold_records_exn "sequences.fasta" ~init:0
+        Fasta.In_channel.with_file_fold_records "sequences.fasta" ~init:0
           ~f:(fun length record -> length + Fasta.Record.seq_length record)
-    ]}
-
-    Same thing, but this won't raise exceptions. You do have to handle
-    [Or_error.t] to get the final value. Note that within the fold function, you
-    get [Fasta.Record.t] and not [Fasta.Record.t Or_error.t].
-
-    {[
-      let total_length =
-        match
-          Fasta.In_channel.with_file_fold_records name ~init:0
-            ~f:(fun length record -> length + Fasta.Record.seq_length record)
-        with
-        | Error err ->
-            eprintf "Problem reading records: %s\n" (Error.to_string_hum err);
-            exit 1
-        | Ok total_length -> total_length
     ]}
 
     {2:pipelines Pipelines with records}
@@ -261,8 +204,8 @@ end
 
     {[
       let () =
-        Fasta.In_channel.with_file_exn name ~f:(fun chan ->
-            Fasta.In_channel.record_sequence_exn chan
+        Fasta.In_channel.with_file name ~f:(fun chan ->
+            Fasta.In_channel.record_sequence chan
             (* Add sequence index to record description *)
             |> Sequence.mapi ~f:(fun i record ->
                    let new_desc =
@@ -278,40 +221,12 @@ end
                    Fasta.Record.with_seq new_seq record)
             (* Print sequences *)
             |> Sequence.iter ~f:(fun record ->
-                   print_endline @@ Fasta.Record.serialize record))
+                   print_endline @@ Fasta.Record.to_string record))
     ]}
 
     One thing to watch out for though...if you get an exception half way through
     and you are running side-effecting code like we are here then part of your
     side effects will have occured and part of them will {i not} have occured.
-
-    There are also [Or_error.t] flavors of the [sequence] functions. Just watch
-    out because these you actually {i do} have to deal with [Or_error.t] for
-    each [Fasta.Record.t] in the sequence.
-
-    As an alternative, you could use the [record_sequence_exn] function, but
-    wrap {i that} in the [with_file] function. That way you don't have to deal
-    with the [Or_error.t] inside your pipeline. Instead you deal with it at the
-    end.
-
-    {[
-      let total_length =
-        match
-          Fasta.In_channel.with_file name ~f:(fun chan ->
-              Fasta.In_channel.record_sequence_exn chan
-              (* Blow up pipeline on second sequence. *)
-              |> Sequence.mapi ~f:(fun i record ->
-                     if i = 1 then assert false;
-                     record)
-              |> Sequence.fold ~init:0 ~f:(fun length record ->
-                     length + String.length (Fasta.Record.seq record)))
-        with
-        | Error err ->
-            eprintf "Problem in parsing pipeline: %s\n"
-              (Error.to_string_hum err);
-            exit 1
-        | Ok total_length -> total_length
-    ]}
 
     As you can see, if that fasta file has more than one sequence it will hit
     the [assert false] and blow up. *)
@@ -325,12 +240,31 @@ end = struct
 
     let clean_sequence s = String.filter s ~f:(fun c -> Char.(c <> ' '))
 
-    let input_record_exn chan =
+    let parse_header_line line =
+      if String.is_prefix line ~prefix:">" then
+        match
+          String.split ~on:' '
+          @@ String.chop_prefix_exn ~prefix:">"
+          @@ String.strip line
+        with
+        (* Empty header lines get id = "" *)
+        | [ id ] -> Record.create ~id ~desc:None ~seq:""
+        | id :: desc ->
+            Record.create ~id ~desc:(Some (String.concat ~sep:" " desc)) ~seq:""
+        | [] ->
+            (* String.split should at least give [""]. Should never get here. *)
+            assert false
+      else
+        failwith
+        @@ Printf.sprintf "Header line should start with '>'.  Got: '%s'"
+        @@ String.prefix line 0
+
+    let input_record chan =
       let rec loop thing =
         match (peek_char chan, thing) with
         | None, None -> None
         | None, Some (header, seq) | Some '>', Some (header, seq) ->
-            let r = Record.of_header_exn header in
+            let r = parse_header_line header in
             let seq = String.concat ~sep:"" @@ List.rev seq in
             Some (Record.with_seq seq r)
         | Some '>', None ->
