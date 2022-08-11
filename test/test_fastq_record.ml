@@ -119,11 +119,12 @@ let%expect_test "basic field access" =
     create ~id:"apple" ~desc:(Some "pie") ~seq:"actgN" ~qual:"....?"
       ~extra:(Some "hehe")
   in
+  (* Value exn needs parens for earlier OCaml versions. *)
   print_endline @@ id r;
-  print_endline @@ Option.value_exn @@ desc r;
+  print_endline @@ Option.value_exn (desc r);
   print_endline @@ seq r;
   print_endline @@ qual r;
-  print_endline @@ Option.value_exn @@ extra r;
+  print_endline @@ Option.value_exn (extra r);
   [%expect {|
     apple
     pie

@@ -308,10 +308,8 @@ end = struct
         | Some line, 1 -> loop (i + 1) ?header_line ~seq_line:line
         | Some line, 2 -> loop (i + 1) ?header_line ?seq_line ~extra_line:line
         | Some line, 3 ->
-            let id, desc =
-              parse_header_line @@ Option.value_exn @@ header_line
-            in
-            let seq = clean_sequence @@ Option.value_exn @@ seq_line in
+            let id, desc = parse_header_line @@ Option.value_exn header_line in
+            let seq = clean_sequence @@ Option.value_exn seq_line in
             let extra = Option.map ~f:parse_extra_line extra_line in
             let qual = clean_sequence line in
             Some (Record.create ~id ~desc ~seq ~extra ~qual)
