@@ -1,5 +1,16 @@
 ## Unreleased
 
+### Added
+
+- Add `Fastq` module for parsing FASTQ files
+
+### Changed
+
+- Drop `Or_error.t` returning functions for `Records` and `In_channels` (breaking change)
+  - The functions with `_exn` suffix have now become the default (e.g., `fold_records_exn` is now `fold_records`).
+  - The `Or_error.t` returning functions are gone. Some were treating truly exceptional events as [Errors] (i.e., if your FASTA file is bad, then you have a major problem!) and others were just not user-friendly.
+  - If you don't want to be bothered by exceptions, wrap the function in `Or_error.try_with` or something similar.
+
 ## 0.5.1 (2022-07-13)
 
 - Fixed issue with project not building under Dune release profile
