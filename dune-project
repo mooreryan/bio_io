@@ -1,5 +1,7 @@
 (lang dune 3.2)
 
+(name bio_io)
+
 (generate_opam_files true)
 
 (cram enable)
