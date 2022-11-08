@@ -3,6 +3,7 @@
 ### Added
 
 - Add `Fastq` module for parsing FASTQ files
+- Add `ppx_equal` and `ppx_fields` functions to `Bio_io.Btab.Parsed.t`.
 
 ### Changed
 

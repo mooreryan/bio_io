@@ -151,7 +151,7 @@ module Record : sig
       qlen : int option;
       tlen : int option;
     }
-    [@@deriving sexp]
+    [@@deriving equal, fields, sexp]
   end
 
   val parse : t -> Parsed.t
@@ -334,29 +334,28 @@ end = struct
       qlen : int option;
       tlen : int option;
     }
-    [@@deriving sexp]
+    [@@deriving equal, fields, sexp]
   end
 
   (* Generally prefer the direct functions. But sometimes you really do just
      want to have a record with human readable elements for whatever reason. *)
   let parse t =
-    Parsed.
-      {
-        query = query t;
-        target = target t;
-        pident = pident t;
-        alnlen = alnlen t;
-        mismatch = mismatch t;
-        gapopen = gapopen t;
-        qstart = qstart t;
-        qend = qend t;
-        tstart = tstart t;
-        tend = tend t;
-        evalue = evalue t;
-        bits = bits t;
-        qlen = qlen t;
-        tlen = tlen t;
-      }
+    {
+      Parsed.query = query t;
+      target = target t;
+      pident = pident t;
+      alnlen = alnlen t;
+      mismatch = mismatch t;
+      gapopen = gapopen t;
+      qstart = qstart t;
+      qend = qend t;
+      tstart = tstart t;
+      tend = tend t;
+      evalue = evalue t;
+      bits = bits t;
+      qlen = qlen t;
+      tlen = tlen t;
+    }
 end
 
 (** [In_channel] for Btab records.
