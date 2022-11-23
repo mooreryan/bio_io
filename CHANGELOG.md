@@ -1,5 +1,9 @@
 ## Unreleased
 
+NA
+
+## 0.6.0 (2022-11-23)
+
 ### Added
 
 - Add `Fastq` module for parsing FASTQ files
