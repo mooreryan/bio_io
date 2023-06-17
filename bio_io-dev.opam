@@ -13,7 +13,7 @@ depends: [
   "core_bench" {>= "v0.16" & < "v0.17"}
   "core_unix" {>= "v0.16" & < "v0.17"}
   "ocaml" {>= "4.14"}
-  "ocamlformat" {>= "0.22" & < "0.23"}
+  "ocamlformat" {>= "0.25" & < "0.26"}
   "ocaml-lsp-server" {>= "1.11"}
   "ppx_sexp_conv" {>= "v0.16" & < "v0.17"}
   "odoc" {with-doc}
