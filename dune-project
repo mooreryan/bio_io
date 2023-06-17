@@ -6,7 +6,7 @@
 
 (cram enable)
 
-(version 0.6.0)
+(version 0.7.0-SNAPSHOT)
 
 (maintainers "Ryan M. Moore")
 
@@ -25,15 +25,21 @@
  (name bio_io-dev)
  (allow_empty)
  (depends
-  (ocaml
-   (>= "4.14"))
   bisect_ppx
   (core
-   (>= "v0.15"))
+   (and
+    (>= "v0.16")
+    (< "v0.17")))
   (core_bench
-   (>= "v0.15"))
+   (and
+    (>= "v0.16")
+    (< "v0.17")))
   (core_unix
-   (>= "v0.15"))
+   (and
+    (>= "v0.16")
+    (< "v0.17")))
+  (ocaml
+   (>= "4.14"))
   (ocamlformat
    (and
     (>= "0.22")
@@ -41,7 +47,9 @@
   (ocaml-lsp-server
    (>= "1.11"))
   (ppx_sexp_conv
-   (>= "v0.15"))))
+   (and
+    (>= "v0.16")
+    (< "v0.17")))))
 
 (package
  (name bio_io)
@@ -50,33 +58,51 @@
  (depends
   ; Runtime dependencies
   (base
-   (>= "v0.15"))
+   (and
+    (>= "v0.16")
+    (< "v0.17")))
   (ocaml
-   (>= "4.10"))
+   (>= "4.14"))
   (ppx_compare
-   (>= "v0.15"))
+   (and
+    (>= "v0.16")
+    (< "v0.17")))
   (ppx_fields_conv
-   (>= "v0.15"))
+   (and
+    (>= "v0.16")
+    (< "v0.17")))
   (ppx_sexp_conv
-   (>= "v0.15"))
+   (and
+    (>= "v0.16")
+    (< "v0.17")))
   (stdio
-   (>= "v0.15"))
+   (and
+    (>= "v0.16")
+    (< "v0.17")))
   ; Test-only dependencies
   (ppx_assert
    (and
-    (>= "v0.15")
+    (and
+     (>= "v0.16")
+     (< "v0.17"))
     :with-test))
   (base_quickcheck
    (and
-    (>= "v0.15")
+    (and
+     (>= "v0.16")
+     (< "v0.17"))
     :with-test))
   (ppx_expect
    (and
-    (>= "v0.15")
+    (and
+     (>= "v0.16")
+     (< "v0.17"))
     :with-test))
   (ppx_inline_test
    (and
-    (>= "v0.15")
+    (and
+     (>= "v0.16")
+     (< "v0.17"))
     :with-test))
   (re
    (and
