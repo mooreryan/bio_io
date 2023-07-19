@@ -33,7 +33,11 @@ module Record : sig
   val hits : t -> Btab.Record.t list
   (** [hits t] returns the list of hits associated with this query sequence. *)
 end = struct
+  [@@@coverage off]
+
   type t = {query: string; hits: Btab.Record.t list} [@@deriving sexp_of]
+
+  [@@@coverage on]
 
   let create query hits = {query; hits}
 

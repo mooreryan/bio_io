@@ -80,9 +80,13 @@ module Peekable_in_channel : sig
 end = struct
   (* TODO let user set newline. *)
 
+  [@@@coverage off]
+
   (* Note that the buf is a line, and the input_line functions remove the
      newline, so the buf won't have a newline. *)
   type t = {ic: Stdio.In_channel.t; buf: string option ref} [@@deriving equal]
+
+  [@@@coverage on]
 
   let stdin = {ic= Stdio.In_channel.stdin; buf= ref None}
 

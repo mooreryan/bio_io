@@ -158,6 +158,8 @@ module Record : sig
   val parse : t -> Parsed.t
   (** [parse t] parses the [Btab.Record.t] into [Btab.Record.Parsed.t]. *)
 end = struct
+  [@@@coverage off]
+
   type t =
     { line: string
     ; query: int * int
@@ -175,6 +177,8 @@ end = struct
     ; qlen: (int * int) option
     ; tlen: (int * int) option }
   [@@deriving sexp]
+
+  [@@@coverage on]
 
   (* Store the starting indices and the offsets for speedier parsing. Also,
      store the original line so that we can slice it. *)
@@ -311,6 +315,8 @@ end = struct
   (* Sometimes you really do just want to get a record with everything already
      parsed out. *)
   module Parsed = struct
+    [@@@coverage off]
+
     type t =
       { query: string
       ; target: string
@@ -327,6 +333,8 @@ end = struct
       ; qlen: int option
       ; tlen: int option }
     [@@deriving equal, fields, sexp]
+
+    [@@@coverage on]
   end
 
   (* Generally prefer the direct functions. But sometimes you really do just

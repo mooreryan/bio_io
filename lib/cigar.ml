@@ -14,6 +14,8 @@ let add_exn x y =
 
 exception Exn of string [@@deriving sexp]
 
+[@@@coverage off]
+
 (** An operation describing an alignment.
 
     - [Match]: A non-gap alignment position. May be a mismatch.
@@ -23,6 +25,8 @@ exception Exn of string [@@deriving sexp]
     (Note that the drive5 webpage has this backwards. It's possible they have
     reversed definition of query and target.) *)
 type op = Match | Insertion | Deletion [@@deriving equal, sexp]
+
+[@@@coverage on]
 
 let op_of_char = function
   | 'M' ->
@@ -41,7 +45,11 @@ let op_to_string = function Match -> "M" | Insertion -> "I" | Deletion -> "D"
 module Chunk : sig
   (** Mint a new type here so the lengths are guaranteed to be good. *)
 
+  [@@@coverage off]
+
   type t [@@deriving equal, sexp]
+
+  [@@@coverage on]
 
   val create : int -> op -> t Or_error.t
 
@@ -51,7 +59,11 @@ module Chunk : sig
 
   val op : t -> op
 end = struct
+  [@@@coverage off]
+
   type t = int * op [@@deriving equal, sexp]
+
+  [@@@coverage on]
 
   let create length op =
     if length > 0 then Or_error.return (length, op)

@@ -132,7 +132,11 @@ module Record : sig
       part of the IUPAC passes through unchanged. Note that [rev_comp] does not
       round-trip. *)
 end = struct
+  [@@@coverage off]
+
   type t = {id: string; desc: string option; seq: string} [@@deriving sexp]
+
+  [@@@coverage on]
 
   let create ~id ~desc ~seq = {id; desc; seq}
 

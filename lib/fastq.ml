@@ -122,6 +122,8 @@ module Record : sig
       IUPAC conventions. Any "base" (char) that isn't part of the IUPAC passes
       through unchanged. Note that [rev_comp] does not round-trip. *)
 end = struct
+  [@@@coverage off]
+
   type t =
     { id: string
     ; desc: string option
@@ -129,6 +131,8 @@ end = struct
     ; qual: string
     ; extra: string option }
   [@@deriving sexp]
+
+  [@@@coverage on]
 
   let create ~id ~desc ~seq ~qual ~extra = {id; desc; seq; qual; extra}
 
