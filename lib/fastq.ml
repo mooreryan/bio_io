@@ -31,12 +31,12 @@ module Record : sig
   type t [@@deriving sexp]
 
   val create :
-    id:string ->
-    desc:string option ->
-    seq:string ->
-    qual:string ->
-    extra:string option ->
-    t
+       id:string
+    -> desc:string option
+    -> seq:string
+    -> qual:string
+    -> extra:string option
+    -> t
   (** [create ~id ~desc ~seq ~qual ~extra] creates a new [t]. Shouldn't raise as
       literally any values of the correct type are accepted. *)
 
@@ -122,16 +122,15 @@ module Record : sig
       IUPAC conventions. Any "base" (char) that isn't part of the IUPAC passes
       through unchanged. Note that [rev_comp] does not round-trip. *)
 end = struct
-  type t = {
-    id : string;
-    desc : string option;
-    seq : string;
-    qual : string;
-    extra : string option;
-  }
+  type t =
+    { id: string
+    ; desc: string option
+    ; seq: string
+    ; qual: string
+    ; extra: string option }
   [@@deriving sexp]
 
-  let create ~id ~desc ~seq ~qual ~extra = { id; desc; seq; qual; extra }
+  let create ~id ~desc ~seq ~qual ~extra = {id; desc; seq; qual; extra}
 
   let to_string r =
     let header =
@@ -150,18 +149,31 @@ end = struct
     && Option.equal String.equal r1.extra r2.extra
 
   let ( = ) = equal
+
   let id r = r.id
+
   let desc r = r.desc
+
   let seq r = r.seq
+
   let qual r = r.qual
+
   let extra r = r.extra
+
   let seq_length r = String.length r.seq
-  let with_id id r = { r with id }
-  let with_seq seq r = { r with seq }
-  let with_desc desc r = { r with desc }
-  let with_qual qual r = { r with qual }
-  let with_extra extra r = { r with extra }
+
+  let with_id id r = {r with id}
+
+  let with_seq seq r = {r with seq}
+
+  let with_desc desc r = {r with desc}
+
+  let with_qual qual r = {r with qual}
+
+  let with_extra extra r = {r with extra}
+
   let rev t = t |> with_seq (String.rev t.seq) |> with_qual (String.rev t.qual)
+
   let comp t = t |> with_seq (Utils.complement t.seq)
 
   let rev_comp t =
@@ -197,7 +209,7 @@ end
         Fastq.In_channel.with_file_iter_records "sequences.fastq"
           ~f:(fun record ->
             let open Fastq.Record in
-            printf "%s => %d\n" (id record) (seq_length record))
+            printf "%s => %d\n" (id record) (seq_length record) )
     ]}
 
     Print sequence index, IDs, and sequence lengths.
@@ -210,7 +222,7 @@ end
         Fastq.In_channel.with_file_iteri_records "sequences.fastq"
           ~f:(fun i record ->
             let open Fastq.Record in
-            printf "%d: %s => %d\n" (i + 1) (id record) (seq_length record))
+            printf "%d: %s => %d\n" (i + 1) (id record) (seq_length record) )
     ]}
 
     {2 Folding over records}
@@ -240,18 +252,19 @@ end
             |> Sequence.mapi ~f:(fun i record ->
                    let new_desc =
                      match Fastq.Record.desc record with
-                     | None -> Some (sprintf "sequence %d" i)
+                     | None ->
+                         Some (sprintf "sequence %d" i)
                      | Some old_desc ->
                          Some (sprintf "%s -- sequence %d" old_desc i)
                    in
-                   Fastq.Record.with_desc new_desc record)
+                   Fastq.Record.with_desc new_desc record )
             (* Convert all sequence chars to lowercase *)
             |> Sequence.map ~f:(fun record ->
                    let new_seq = String.lowercase (Fastq.Record.seq record) in
-                   Fastq.Record.with_seq new_seq record)
+                   Fastq.Record.with_seq new_seq record )
             (* Print sequences *)
             |> Sequence.iter ~f:(fun record ->
-                   print_endline @@ Fastq.Record.to_string record))
+                   print_endline @@ Fastq.Record.to_string record ) )
     ]}
 
     One thing to watch out for though...if you get an exception half way through
@@ -278,22 +291,24 @@ end = struct
         @@ Printf.sprintf
              "I expected to see a header line starting with '@', but saw '%s' \
               instead."
-        @@ String.prefix line 0;
-
+        @@ String.prefix line 0 ;
       match
         String.split ~on:' '
         @@ String.chop_prefix_exn ~prefix:"@"
         @@ String.strip line
       with
-      | [ id ] -> (id, None)
+      | [id] ->
+          (id, None)
       | id :: desc ->
           (id, Some (String.concat ~sep:" " desc))
           (* String.split should at least give [""]. Should never get here. *)
-      | [] -> assert false
+      | [] ->
+          assert false
 
     let parse_extra_line line =
       match String.chop_prefix line ~prefix:"+" with
-      | Some s -> s
+      | Some s ->
+          s
       | None ->
           failwith
           @@ Printf.sprintf
@@ -304,22 +319,26 @@ end = struct
     let input_record chan =
       let rec loop ?header_line ?seq_line ?extra_line i =
         match (input_line ~fix_win_eol:true chan, i) with
-        | Some line, 0 -> loop (i + 1) ~header_line:line
-        | Some line, 1 -> loop (i + 1) ?header_line ~seq_line:line
-        | Some line, 2 -> loop (i + 1) ?header_line ?seq_line ~extra_line:line
+        | Some line, 0 ->
+            loop (i + 1) ~header_line:line
+        | Some line, 1 ->
+            loop (i + 1) ?header_line ~seq_line:line
+        | Some line, 2 ->
+            loop (i + 1) ?header_line ?seq_line ~extra_line:line
         | Some line, 3 ->
             let id, desc = parse_header_line @@ Option.value_exn header_line in
             let seq = clean_sequence @@ Option.value_exn seq_line in
             let extra = Option.map ~f:parse_extra_line extra_line in
             let qual = clean_sequence line in
             Some (Record.create ~id ~desc ~seq ~extra ~qual)
-        | None, 0 -> None
+        | None, 0 ->
+            None
         | None, 1 | None, 2 | None, 3 ->
             failwith
               "I was partway through a record, but I hit the end of the file."
-        | Some _, _ | None, _ -> assert false
+        | Some _, _ | None, _ ->
+            assert false
       in
-
       loop 0
   end
 

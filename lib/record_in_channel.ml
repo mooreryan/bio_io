@@ -31,6 +31,7 @@ module type S = sig
   (** {1 API} *)
 
   type t
+
   type record
 
   val stdin : t
@@ -135,17 +136,22 @@ end
     make a [Record_in_channel] module. *)
 module type In_channel_input_record = sig
   type t
+
   type record
 
   val equal : t -> t -> bool
+
   val stdin : t
+
   val close : t -> unit
 
   (** These two functions differ from the [Stdio.In_channel] in that they don't
       take a [binary] argument. *)
 
   val create : string -> t
+
   val with_file : string -> f:(t -> 'a) -> 'a
+
   val input_record : t -> record option
 end
 
@@ -153,25 +159,32 @@ end
 module Make (M : In_channel_input_record) :
   S with type t := M.t with type record := M.record = struct
   let equal = M.equal
+
   let stdin = M.stdin
+
   let create fname = M.create fname
+
   let close t = M.close t
+
   let with_file fname ~f = M.with_file fname ~f
+
   let input_record t = M.input_record t
 
   (* Folding over records *)
 
   let fold_records t ~init ~f =
     let rec loop acc = function
-      | None -> acc
-      | Some record' -> loop (f acc record') (input_record t)
+      | None ->
+          acc
+      | Some record' ->
+          loop (f acc record') (input_record t)
     in
     loop init (input_record t)
 
   let foldi_records t ~init ~f =
     snd
       (fold_records t ~init:(0, init) ~f:(fun (i, acc) record ->
-           (i + 1, f i acc record)))
+           (i + 1, f i acc record) ) )
 
   let with_file_fold_records fname ~init ~f =
     with_file fname ~f:(fun t -> fold_records t ~init ~f)
@@ -204,5 +217,5 @@ module Make (M : In_channel_input_record) :
 
   let record_sequence t =
     Sequence.unfold ~init:t ~f:(fun ch ->
-        Option.map (input_record ch) ~f:(fun record -> (record, ch)))
+        Option.map (input_record ch) ~f:(fun record -> (record, ch)) )
 end

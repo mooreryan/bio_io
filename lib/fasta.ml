@@ -20,10 +20,10 @@ open! Base
 
     {[
       (* "s1" *)
-      Fasta.Record.id record;;
+      Fasta.Record.id record ;;
 
       (* Some "apple pie" *)
-      Fasta.Record.desc record;;
+      Fasta.Record.desc record ;;
 
       (* "ACTGactg" *)
       Fasta.Record.seq record
@@ -43,10 +43,10 @@ open! Base
 
     {[
       (* "s1" *)
-      Fasta.Record.id record;;
+      Fasta.Record.id record ;;
 
       (* None *)
-      Fasta.Record.desc record;;
+      Fasta.Record.desc record ;;
 
       (* "ACTGactg" *)
       Fasta.Record.seq record
@@ -132,14 +132,16 @@ module Record : sig
       part of the IUPAC passes through unchanged. Note that [rev_comp] does not
       round-trip. *)
 end = struct
-  type t = { id : string; desc : string option; seq : string } [@@deriving sexp]
+  type t = {id: string; desc: string option; seq: string} [@@deriving sexp]
 
-  let create ~id ~desc ~seq = { id; desc; seq }
+  let create ~id ~desc ~seq = {id; desc; seq}
 
   let to_string r =
     match r.desc with
-    | None -> Printf.sprintf ">%s\n%s" r.id r.seq
-    | Some desc -> Printf.sprintf ">%s %s\n%s" r.id desc r.seq
+    | None ->
+        Printf.sprintf ">%s\n%s" r.id r.seq
+    | Some desc ->
+        Printf.sprintf ">%s %s\n%s" r.id desc r.seq
 
   let to_string_nl ?(nl = "\n") r = to_string r ^ nl
 
@@ -149,15 +151,25 @@ end = struct
     && Option.equal String.equal r1.desc r2.desc
 
   let ( = ) = equal
+
   let id r = r.id
+
   let desc r = r.desc
+
   let seq r = r.seq
+
   let seq_length r = String.length r.seq
-  let with_id id r = { r with id }
-  let with_seq seq r = { r with seq }
-  let with_desc desc r = { r with desc }
+
+  let with_id id r = {r with id}
+
+  let with_seq seq r = {r with seq}
+
+  let with_desc desc r = {r with desc}
+
   let rev t = t |> with_seq (String.rev t.seq)
+
   let comp t = t |> with_seq (Utils.complement t.seq)
+
   let rev_comp t = t |> with_seq (Utils.rev_complement t.seq)
 end
 
@@ -184,7 +196,7 @@ end
         Fasta.In_channel.with_file_iter_records "sequences.fasta"
           ~f:(fun record ->
             let open Fasta.Record in
-            printf "%s => %d\n" (id record) (seq_length record))
+            printf "%s => %d\n" (id record) (seq_length record) )
     ]}
 
     Print sequence index, IDs, and sequence lengths.
@@ -197,7 +209,7 @@ end
         Fasta.In_channel.with_file_iteri_records "sequences.fasta"
           ~f:(fun i record ->
             let open Fasta.Record in
-            printf "%d: %s => %d\n" (i + 1) (id record) (seq_length record))
+            printf "%d: %s => %d\n" (i + 1) (id record) (seq_length record) )
     ]}
 
     {2 Folding over records}
@@ -227,18 +239,19 @@ end
             |> Sequence.mapi ~f:(fun i record ->
                    let new_desc =
                      match Fasta.Record.desc record with
-                     | None -> Some (sprintf "sequence %d" i)
+                     | None ->
+                         Some (sprintf "sequence %d" i)
                      | Some old_desc ->
                          Some (sprintf "%s -- sequence %d" old_desc i)
                    in
-                   Fasta.Record.with_desc new_desc record)
+                   Fasta.Record.with_desc new_desc record )
             (* Convert all sequence chars to lowercase *)
             |> Sequence.map ~f:(fun record ->
                    let new_seq = String.lowercase (Fasta.Record.seq record) in
-                   Fasta.Record.with_seq new_seq record)
+                   Fasta.Record.with_seq new_seq record )
             (* Print sequences *)
             |> Sequence.iter ~f:(fun record ->
-                   print_endline @@ Fasta.Record.to_string record))
+                   print_endline @@ Fasta.Record.to_string record ) )
     ]}
 
     One thing to watch out for though...if you get an exception half way through
@@ -258,14 +271,15 @@ end = struct
     let clean_sequence s = String.filter s ~f:(fun c -> Char.(c <> ' '))
 
     let parse_header_line line =
-      assert (String.is_prefix line ~prefix:">");
+      assert (String.is_prefix line ~prefix:">") ;
       match
         String.split ~on:' '
         @@ String.chop_prefix_exn ~prefix:">"
         @@ String.strip line
       with
       (* Empty header lines get id = "" *)
-      | [ id ] -> Record.create ~id ~desc:None ~seq:""
+      | [id] ->
+          Record.create ~id ~desc:None ~seq:""
       | id :: desc ->
           Record.create ~id ~desc:(Some (String.concat ~sep:" " desc)) ~seq:""
       | [] ->
@@ -275,7 +289,8 @@ end = struct
     let input_record chan =
       let rec loop thing =
         match (peek_char chan, thing) with
-        | None, None -> None
+        | None, None ->
+            None
         | None, Some (header, seq) | Some '>', Some (header, seq) ->
             let r = parse_header_line header in
             let seq = String.concat ~sep:"" @@ List.rev seq in

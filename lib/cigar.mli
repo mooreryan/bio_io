@@ -39,8 +39,9 @@
     This implementation uses a reduced set of operations used by MMseqs2: Match
     (M), Insertion (I), and Deletion (D). Eventually, I will implement the rest
     of the operations, but in the meantime, if your use case requires the full
-    CIGAR spec, please open an {{:https://github.com/mooreryan/bio_io/issues}
-    issue} on GitHub and let me know!
+    CIGAR spec, please open an
+    {{:https://github.com/mooreryan/bio_io/issues} issue} on GitHub and let me
+    know!
 
     {2 Notes}
 
@@ -57,6 +58,7 @@ open! Base
 (** {1 API} *)
 
 exception Exn of string [@@deriving sexp]
+
 exception Int_overflow of (int * int) [@@deriving sexp]
 
 type t [@@deriving equal, sexp]
@@ -107,8 +109,8 @@ val to_string : t -> string
 
     Since it is possible to overflow integer arithmetic on CIGAR strings you may
     parse, the length functions use an addition function that raises
-    [Int_overflow] exceptions rather than use {{:https://ocaml.org/api/Int.html}
-    two's complement wrapping}.
+    [Int_overflow] exceptions rather than use
+    {{:https://ocaml.org/api/Int.html} two's complement wrapping}.
 
     Thus, there are two versions, those that end in [_exn] that may raise
     [Int_overflow] and those that return [t Or_error.t], which catch
@@ -183,12 +185,12 @@ val draw_exn :
   ?max_aln_len:int -> ?gap:char -> ?non_gap:char -> ?wrap:int -> t -> string
 
 val draw :
-  ?max_aln_len:int ->
-  ?gap:char ->
-  ?non_gap:char ->
-  ?wrap:int ->
-  t ->
-  string Or_error.t
+     ?max_aln_len:int
+  -> ?gap:char
+  -> ?non_gap:char
+  -> ?wrap:int
+  -> t
+  -> string Or_error.t
 (** [draw t ~max_aln_len ~gap ~non_gap ~wrap] outputs a string representation of
     the aligmnent as inferred from the CIGAR string. This function is mainly
     just for fun or if you want to learn how CIGAR strings work :)

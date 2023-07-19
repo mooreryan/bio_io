@@ -9,7 +9,9 @@ let argv = Sys.get_argv ()
 
 let fname =
   match Array.length argv with
-  | 2 -> argv.(1)
-  | _ -> abort "usage: fuzz_fasta_in_channel.exe seqs.fa"
+  | 2 ->
+      argv.(1)
+  | _ ->
+      abort "usage: fuzz_fasta_in_channel.exe seqs.fa"
 
 let _seqs = Fasta.In_channel.with_file_records fname

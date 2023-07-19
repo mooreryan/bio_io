@@ -25,12 +25,17 @@ exception Exn of string [@@deriving sexp]
 type op = Match | Insertion | Deletion [@@deriving equal, sexp]
 
 let op_of_char = function
-  | 'M' -> Or_error.return Match
-  | 'I' -> Or_error.return Insertion
-  | 'D' -> Or_error.return Deletion
-  | c -> Or_error.errorf "Expected M, D, or I. Got %c." c
+  | 'M' ->
+      Or_error.return Match
+  | 'I' ->
+      Or_error.return Insertion
+  | 'D' ->
+      Or_error.return Deletion
+  | c ->
+      Or_error.errorf "Expected M, D, or I. Got %c." c
 
 let op_to_char = function Match -> 'M' | Insertion -> 'I' | Deletion -> 'D'
+
 let op_to_string = function Match -> "M" | Insertion -> "I" | Deletion -> "D"
 
 module Chunk : sig
@@ -39,8 +44,11 @@ module Chunk : sig
   type t [@@deriving equal, sexp]
 
   val create : int -> op -> t Or_error.t
+
   val to_string : t -> string
+
   val length : t -> int
+
   val op : t -> op
 end = struct
   type t = int * op [@@deriving equal, sexp]
@@ -50,15 +58,19 @@ end = struct
     else Or_error.errorf "Length must be > 0.  Got %d." length
 
   let to_string (length, op) = Int.to_string length ^ op_to_string op
+
   let length (length, _op) = length
+
   let op (_length, op) = op
 end
 
 type t = Chunk.t list [@@deriving equal, sexp]
 
 let is_int = function
-  | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' -> true
-  | _ -> false
+  | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' ->
+      true
+  | _ ->
+      false
 
 let is_cigar_op = function 'M' | 'D' | 'I' -> true | _ -> false
 
@@ -84,24 +96,28 @@ let of_string_exn s =
             (* ok_exn okay here as the parsing disallows negative numbers. *)
             let chunk = Or_error.ok_exn @@ Chunk.create length op in
             ("", chunk :: all)
-        | true, false -> (current ^ String.of_char c, all))
+        | true, false ->
+            (current ^ String.of_char c, all) )
   in
   List.rev pairs
 
 let of_string s = Utils.try1' ~msg:"Error parsing cigar string" of_string_exn s
+
 let to_string cigar = String.concat ~sep:"" @@ List.map cigar ~f:Chunk.to_string
 
 let alignment_length_exn cigar =
   List.fold cigar ~init:0 ~f:(fun length chunk ->
-      add_exn length (Chunk.length chunk))
+      add_exn length (Chunk.length chunk) )
 
 let alignment_length cigar = Utils.try1 alignment_length_exn cigar
 
 let num_gaps_exn cigar =
   List.fold cigar ~init:0 ~f:(fun acc chunk ->
       match Chunk.op chunk with
-      | Insertion | Deletion -> add_exn acc (Chunk.length chunk)
-      | Match -> acc)
+      | Insertion | Deletion ->
+          add_exn acc (Chunk.length chunk)
+      | Match ->
+          acc )
 
 let num_gaps cigar = Utils.try1 num_gaps_exn cigar
 
@@ -112,24 +128,30 @@ let num_gaps cigar = Utils.try1 num_gaps_exn cigar
 let num_matches_exn cigar =
   List.fold cigar ~init:0 ~f:(fun acc chunk ->
       match Chunk.op chunk with
-      | Match -> add_exn acc (Chunk.length chunk)
-      | Insertion | Deletion -> acc)
+      | Match ->
+          add_exn acc (Chunk.length chunk)
+      | Insertion | Deletion ->
+          acc )
 
 let num_matches cigar = Utils.try1 num_matches_exn cigar
 
 let query_length_exn cigar =
   List.fold cigar ~init:0 ~f:(fun length chunk ->
       match Chunk.op chunk with
-      | Match | Insertion -> add_exn length (Chunk.length chunk)
-      | Deletion -> length)
+      | Match | Insertion ->
+          add_exn length (Chunk.length chunk)
+      | Deletion ->
+          length )
 
 let query_length cigar = Utils.try1 query_length_exn cigar
 
 let target_length_exn cigar =
   List.fold cigar ~init:0 ~f:(fun length chunk ->
       match Chunk.op chunk with
-      | Match | Deletion -> add_exn length (Chunk.length chunk)
-      | Insertion -> length)
+      | Match | Deletion ->
+          add_exn length (Chunk.length chunk)
+      | Insertion ->
+          length )
 
 let target_length cigar = Utils.try1 target_length_exn cigar
 
@@ -152,7 +174,7 @@ let draw_helper op_to_char_fun cigar =
          let c = op_to_char_fun @@ Chunk.op chunk in
          (* WARNING: this can raise an Out of memory error depending on the
             cigar string :) *)
-         String.make (Chunk.length chunk) c)
+         String.make (Chunk.length chunk) c )
 
 let char_list_to_string cl =
   String.concat ~sep:"" @@ List.map cl ~f:Char.to_string
@@ -172,16 +194,14 @@ let wrap_aligment max_len ~target ~target_label ~query ~query_label ~op
   @@ List.map3_exn (string_splits' target) (string_splits' query)
        (string_splits' op) ~f:(fun target_split query_split op_split ->
          String.concat ~sep:"\n"
-           [
-             target_label ^ target_split;
-             query_label ^ query_split;
-             op_label ^ op_split;
-           ])
+           [ target_label ^ target_split
+           ; query_label ^ query_split
+           ; op_label ^ op_split ] )
 
 let draw_exn ?(max_aln_len = 1000) ?(gap = '-') ?(non_gap = 'X') ?(wrap = 60)
     cigar =
   let len = alignment_length_exn cigar in
-  assert (len >= 0);
+  assert (len >= 0) ;
   if len > max_aln_len then ""
   else
     let draw_target = draw_helper @@ op_to_target_draw_char ~gap ~non_gap in
@@ -200,4 +220,5 @@ let draw ?(max_aln_len = 1000) ?(gap = '-') ?(non_gap = 'X') ?(wrap = 60) cigar
   match draw_exn ~max_aln_len ~gap ~non_gap ~wrap cigar with
   | exception exn ->
       Or_error.error "Couldn't calculate alignment length" exn Exn.sexp_of_t
-  | result -> Or_error.return result
+  | result ->
+      Or_error.return result

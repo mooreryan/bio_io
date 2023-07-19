@@ -15,8 +15,8 @@ open! Base
 module Record : sig
   (** {1 API} *)
 
-  type t [@@deriving sexp_of]
   (** A btab query record. I.e., query name and a list of all [Btab.t] hits. *)
+  type t [@@deriving sexp_of]
 
   (** {2 Creating} *)
 
@@ -33,10 +33,12 @@ module Record : sig
   val hits : t -> Btab.Record.t list
   (** [hits t] returns the list of hits associated with this query sequence. *)
 end = struct
-  type t = { query : string; hits : Btab.Record.t list } [@@deriving sexp_of]
+  type t = {query: string; hits: Btab.Record.t list} [@@deriving sexp_of]
 
-  let create query hits = { query; hits }
+  let create query hits = {query; hits}
+
   let query t = t.query
+
   let hits t = t.hits
 end
 
@@ -62,16 +64,18 @@ end
 
       let parse_argv () =
         match Sys.get_argv () with
-        | [| _; file_name |] -> file_name
-        | _ -> failwith "missing file_name"
+        | [|_; file_name|] ->
+            file_name
+        | _ ->
+            failwith "missing file_name"
 
       let () =
         let file_name = parse_argv () in
         In_channel.with_file_iter_records file_name ~f:(fun r ->
-            Stdio.print_endline "===";
-            Stdio.print_endline @@ Record.query r;
+            Stdio.print_endline "===" ;
+            Stdio.print_endline @@ Record.query r ;
             let hits = List.map ~f:Bio_io.Btab.Record.parse @@ Record.hits r in
-            Stdio.print_s @@ [%sexp_of: Bio_io.Btab.Record.Parsed.t list] hits)
+            Stdio.print_s @@ [%sexp_of: Bio_io.Btab.Record.Parsed.t list] hits )
     ]}
 
     The output will be somthing like.
@@ -110,12 +114,14 @@ module In_channel = struct
       in
       let rec loop last_query hits =
         match (last_query, peek_line ~fix_win_eol:true ic) with
-        | None, None -> None
+        | None, None ->
+            None
         | None, Some _ ->
             (* Need to consume this line right away. *)
             let r = consume_line ic in
             loop (Some (Btab.Record.query r)) (r :: hits)
-        | Some last_query', None -> mkrecord last_query' hits
+        | Some last_query', None ->
+            mkrecord last_query' hits
         | Some last_query', Some line ->
             (* We need to check if this is a new record or not. *)
             let r = Btab.Record.of_string line in

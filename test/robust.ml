@@ -10,6 +10,7 @@ let robustly_compare x y =
   else 0
 
 let equal x y = Int.equal 0 @@ robustly_compare x y
+
 let ( = ) = equal
 
 (* This code is from Jane Street's Core v0.15. Orig license:

@@ -6,8 +6,10 @@ open! Bio_io.Fasta
 
 let parse_argv () =
   match Sys.get_argv () with
-  | [| _; file_name |] -> file_name
-  | _ -> failwith "missing file_name"
+  | [|_; file_name|] ->
+      file_name
+  | _ ->
+      failwith "missing file_name"
 
 let () =
   let file_name = parse_argv () in
@@ -18,7 +20,7 @@ let () =
         let open Record in
         (* This will raise an exception if the sequence ID is duplicated in the
            input file. *)
-        Map.add_exn m ~key:(id r) ~data:(seq r))
+        Map.add_exn m ~key:(id r) ~data:(seq r) )
   in
   (* Do some stuff with the sequence map. *)
   ()

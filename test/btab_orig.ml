@@ -5,62 +5,57 @@ open! Base
    target length. We keep it here for property testing. *)
 
 module Record = struct
-  type t = {
-    query : string;
-    target : string;
-    pident : float;
-    alnlen : int;
-    mismatch : int;
-    gapopen : int;
-    qstart : int;
-    qend : int;
-    tstart : int;
-    tend : int;
-    evalue : float;
-    bits : float;
-    qlen : int option;
-    tlen : int option;
-  }
+  type t =
+    { query: string
+    ; target: string
+    ; pident: float
+    ; alnlen: int
+    ; mismatch: int
+    ; gapopen: int
+    ; qstart: int
+    ; qend: int
+    ; tstart: int
+    ; tend: int
+    ; evalue: float
+    ; bits: float
+    ; qlen: int option
+    ; tlen: int option }
   [@@deriving fields, sexp]
 
   let of_string s =
     match String.split ~on:'\t' s with
-    | [
-     query;
-     target;
-     pident;
-     alnlen;
-     mismatch;
-     gapopen;
-     qstart;
-     qend;
-     tstart;
-     tend;
-     evalue;
-     bits;
-    ] ->
+    | [ query
+      ; target
+      ; pident
+      ; alnlen
+      ; mismatch
+      ; gapopen
+      ; qstart
+      ; qend
+      ; tstart
+      ; tend
+      ; evalue
+      ; bits ] ->
         Fields.create ~query ~target ~pident:(Float.of_string pident)
           ~alnlen:(Int.of_string alnlen) ~mismatch:(Int.of_string mismatch)
           ~gapopen:(Int.of_string gapopen) ~qstart:(Int.of_string qstart)
           ~qend:(Int.of_string qend) ~tstart:(Int.of_string tstart)
           ~tend:(Int.of_string tend) ~evalue:(Float.of_string evalue)
           ~bits:(Float.of_string bits) ~qlen:None ~tlen:None
-    | [
-     query;
-     target;
-     pident;
-     alnlen;
-     mismatch;
-     gapopen;
-     qstart;
-     qend;
-     tstart;
-     tend;
-     evalue;
-     bits;
-     qlen;
-     tlen;
-    ] ->
+    | [ query
+      ; target
+      ; pident
+      ; alnlen
+      ; mismatch
+      ; gapopen
+      ; qstart
+      ; qend
+      ; tstart
+      ; tend
+      ; evalue
+      ; bits
+      ; qlen
+      ; tlen ] ->
         Fields.create ~query ~target ~pident:(Float.of_string pident)
           ~alnlen:(Int.of_string alnlen) ~mismatch:(Int.of_string mismatch)
           ~gapopen:(Int.of_string gapopen) ~qstart:(Int.of_string qstart)
@@ -69,7 +64,8 @@ module Record = struct
           ~bits:(Float.of_string bits)
           ~qlen:(Some (Int.of_string qlen))
           ~tlen:(Some (Int.of_string tlen))
-    | _ -> failwith "Bad input"
+    | _ ->
+        failwith "Bad input"
 
   let to_string t =
     let conv to_s acc f = to_s (Field.get f t) :: acc in

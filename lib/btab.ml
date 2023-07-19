@@ -13,8 +13,10 @@
 
       let parse_argv () =
         match Sys.get_argv () with
-        | [| _; file_name |] -> file_name
-        | _ -> failwith "missing file_name"
+        | [|_; file_name|] ->
+            file_name
+        | _ ->
+            failwith "missing file_name"
 
       let file_name = parse_argv ()
 
@@ -22,7 +24,7 @@
         let open Bio_io.Btab in
         In_channel.with_file_iter_records file_name ~f:(fun r ->
             Stdio.printf "%s => %s (%.3f)\n" (Record.query r) (Record.target r)
-              (Record.bits r))
+              (Record.bits r) )
     ]} *)
 
 open! Base
@@ -135,45 +137,43 @@ module Record : sig
       lot faster, but like I mentioned before, sometimes you really do want the
       whole thing pre-parsed. Use this module in those cases. *)
   module Parsed : sig
-    type t = {
-      query : string;
-      target : string;
-      pident : float;
-      alnlen : int;
-      mismatch : int;
-      gapopen : int;
-      qstart : int;
-      qend : int;
-      tstart : int;
-      tend : int;
-      evalue : float;
-      bits : float;
-      qlen : int option;
-      tlen : int option;
-    }
+    type t =
+      { query: string
+      ; target: string
+      ; pident: float
+      ; alnlen: int
+      ; mismatch: int
+      ; gapopen: int
+      ; qstart: int
+      ; qend: int
+      ; tstart: int
+      ; tend: int
+      ; evalue: float
+      ; bits: float
+      ; qlen: int option
+      ; tlen: int option }
     [@@deriving equal, fields, sexp]
   end
 
   val parse : t -> Parsed.t
   (** [parse t] parses the [Btab.Record.t] into [Btab.Record.Parsed.t]. *)
 end = struct
-  type t = {
-    line : string;
-    query : int * int;
-    target : int * int;
-    pident : int * int;
-    alnlen : int * int;
-    mismatch : int * int;
-    gapopen : int * int;
-    qstart : int * int;
-    qend : int * int;
-    tstart : int * int;
-    tend : int * int;
-    evalue : int * int;
-    bits : int * int;
-    qlen : (int * int) option;
-    tlen : (int * int) option;
-  }
+  type t =
+    { line: string
+    ; query: int * int
+    ; target: int * int
+    ; pident: int * int
+    ; alnlen: int * int
+    ; mismatch: int * int
+    ; gapopen: int * int
+    ; qstart: int * int
+    ; qend: int * int
+    ; tstart: int * int
+    ; tend: int * int
+    ; evalue: int * int
+    ; bits: int * int
+    ; qlen: (int * int) option
+    ; tlen: (int * int) option }
   [@@deriving sexp]
 
   (* Store the starting indices and the offsets for speedier parsing. Also,
@@ -185,77 +185,70 @@ end = struct
     for i = 0 to len - 1 do
       let c = String.unsafe_get s i in
       if Char.(c = '\t') then (
-        l := (!start, i - !start) :: !l;
-        start := i + 1)
-    done;
+        l := (!start, i - !start) :: !l ;
+        start := i + 1 )
+    done ;
     (* Catch the last token. *)
-    l := (!start, len - !start) :: !l;
+    l := (!start, len - !start) :: !l ;
     match List.rev !l with
-    | [
-     query;
-     target;
-     pident;
-     alnlen;
-     mismatch;
-     gapopen;
-     qstart;
-     qend;
-     tstart;
-     tend;
-     evalue;
-     bits;
-     qlen;
-     tlen;
-    ] ->
-        {
-          line = s;
-          query;
-          target;
-          pident;
-          alnlen;
-          mismatch;
-          gapopen;
-          qstart;
-          qend;
-          tstart;
-          tend;
-          evalue;
-          bits;
-          qlen = Some qlen;
-          tlen = Some tlen;
-        }
-    | [
-     query;
-     target;
-     pident;
-     alnlen;
-     mismatch;
-     gapopen;
-     qstart;
-     qend;
-     tstart;
-     tend;
-     evalue;
-     bits;
-    ] ->
-        {
-          line = s;
-          query;
-          target;
-          pident;
-          alnlen;
-          mismatch;
-          gapopen;
-          qstart;
-          qend;
-          tstart;
-          tend;
-          evalue;
-          bits;
-          qlen = None;
-          tlen = None;
-        }
-    | _ -> failwith ("Bad btab line: '" ^ s ^ "'")
+    | [ query
+      ; target
+      ; pident
+      ; alnlen
+      ; mismatch
+      ; gapopen
+      ; qstart
+      ; qend
+      ; tstart
+      ; tend
+      ; evalue
+      ; bits
+      ; qlen
+      ; tlen ] ->
+        { line= s
+        ; query
+        ; target
+        ; pident
+        ; alnlen
+        ; mismatch
+        ; gapopen
+        ; qstart
+        ; qend
+        ; tstart
+        ; tend
+        ; evalue
+        ; bits
+        ; qlen= Some qlen
+        ; tlen= Some tlen }
+    | [ query
+      ; target
+      ; pident
+      ; alnlen
+      ; mismatch
+      ; gapopen
+      ; qstart
+      ; qend
+      ; tstart
+      ; tend
+      ; evalue
+      ; bits ] ->
+        { line= s
+        ; query
+        ; target
+        ; pident
+        ; alnlen
+        ; mismatch
+        ; gapopen
+        ; qstart
+        ; qend
+        ; tstart
+        ; tend
+        ; evalue
+        ; bits
+        ; qlen= None
+        ; tlen= None }
+    | _ ->
+        failwith ("Bad btab line: '" ^ s ^ "'")
 
   let to_string t = t.line
 
@@ -309,53 +302,50 @@ end = struct
 
   let qlen t =
     Option.map t.qlen ~f:(fun (pos, len) ->
-        Int.of_string @@ String.sub t.line ~pos ~len)
+        Int.of_string @@ String.sub t.line ~pos ~len )
 
   let tlen t =
     Option.map t.tlen ~f:(fun (pos, len) ->
-        Int.of_string @@ String.sub t.line ~pos ~len)
+        Int.of_string @@ String.sub t.line ~pos ~len )
 
   (* Sometimes you really do just want to get a record with everything already
      parsed out. *)
   module Parsed = struct
-    type t = {
-      query : string;
-      target : string;
-      pident : float;
-      alnlen : int;
-      mismatch : int;
-      gapopen : int;
-      qstart : int;
-      qend : int;
-      tstart : int;
-      tend : int;
-      evalue : float;
-      bits : float;
-      qlen : int option;
-      tlen : int option;
-    }
+    type t =
+      { query: string
+      ; target: string
+      ; pident: float
+      ; alnlen: int
+      ; mismatch: int
+      ; gapopen: int
+      ; qstart: int
+      ; qend: int
+      ; tstart: int
+      ; tend: int
+      ; evalue: float
+      ; bits: float
+      ; qlen: int option
+      ; tlen: int option }
     [@@deriving equal, fields, sexp]
   end
 
   (* Generally prefer the direct functions. But sometimes you really do just
      want to have a record with human readable elements for whatever reason. *)
   let parse t =
-    {
-      Parsed.query = query t;
-      target = target t;
-      pident = pident t;
-      alnlen = alnlen t;
-      mismatch = mismatch t;
-      gapopen = gapopen t;
-      qstart = qstart t;
-      qend = qend t;
-      tstart = tstart t;
-      tend = tend t;
-      evalue = evalue t;
-      bits = bits t;
-      qlen = qlen t;
-      tlen = tlen t;
-    }
+    { Parsed.query= query t
+    ; target= target t
+    ; pident= pident t
+    ; alnlen= alnlen t
+    ; mismatch= mismatch t
+    ; gapopen= gapopen t
+    ; qstart= qstart t
+    ; qend= qend t
+    ; tstart= tstart t
+    ; tend= tend t
+    ; evalue= evalue t
+    ; bits= bits t
+    ; qlen= qlen t
+    ; tlen= tlen t }
 end
 
 (** [In_channel] for Btab records.
