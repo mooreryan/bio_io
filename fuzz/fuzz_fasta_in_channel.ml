@@ -3,7 +3,7 @@ open Bio_io
 
 let abort ?(exit_code = 1) msg =
   let () = Stdio.eprintf "%s\n" msg in
-  Caml.exit exit_code
+  Stdlib.exit exit_code
 
 let argv = Sys.get_argv ()
 

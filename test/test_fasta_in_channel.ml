@@ -4,7 +4,7 @@
 
 open! Base
 open Bio_io
-module Filename = Caml.Filename
+module Filename = Stdlib.Filename
 module In_channel = Stdio.In_channel
 module Out_channel = Stdio.Out_channel
 
@@ -14,8 +14,8 @@ let print_endline = Stdio.print_endline
 let printf = Stdio.printf
 let eprintf = Stdio.eprintf
 let sprintf = Printf.sprintf
-let exit = Caml.exit
-let raise_notrace = Caml.raise_notrace
+let exit = Stdlib.exit
+let raise_notrace = Stdlib.raise_notrace
 
 (* This one works with core kernel. *)
 let write_tmp_file data =
@@ -25,8 +25,8 @@ let write_tmp_file data =
       "bio_io_test_fasta_in_channel.txt"
   in
   let () =
-    match Caml.Sys.file_exists fname with
-    | true -> Caml.Sys.remove fname
+    match Stdlib.Sys.file_exists fname with
+    | true -> Stdlib.Sys.remove fname
     | false -> ()
   in
   let chan = Out_channel.create fname in

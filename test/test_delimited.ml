@@ -12,13 +12,13 @@ let trials =
 
 let write_tmp_file data =
   let fname =
-    Caml.Filename.concat
-      (Caml.Filename.get_temp_dir_name ())
+    Stdlib.Filename.concat
+      (Stdlib.Filename.get_temp_dir_name ())
       "bio_io_test_ic.txt"
   in
   let () =
-    match Caml.Sys.file_exists fname with
-    | true -> Caml.Sys.remove fname
+    match Stdlib.Sys.file_exists fname with
+    | true -> Stdlib.Sys.remove fname
     | false -> ()
   in
   let chan = Stdio.Out_channel.create fname in

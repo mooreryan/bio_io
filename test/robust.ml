@@ -4,8 +4,8 @@ let robust_comparison_tolerance = 1E-7
 
 let robustly_compare x y =
   let open Poly in
-  let d = Caml.( -. ) x y in
-  if d < Caml.( ~-. ) robust_comparison_tolerance then -1
+  let d = Stdlib.( -. ) x y in
+  if d < Stdlib.( ~-. ) robust_comparison_tolerance then -1
   else if d > robust_comparison_tolerance then 1
   else 0
 

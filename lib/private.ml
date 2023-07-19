@@ -95,7 +95,7 @@ end = struct
       | Some line -> Buffer.add_string buffer (line ^ "\n")
     in
     let rec loop () =
-      Caml.Buffer.add_channel buffer ic chunk_size;
+      Stdlib.Buffer.add_channel buffer ic chunk_size;
       loop ()
     in
     try loop () with End_of_file -> Buffer.contents buffer
