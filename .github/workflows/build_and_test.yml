@@ -18,9 +18,7 @@ jobs:
         os:
           - ubuntu-latest
         ocaml-compiler:
-          - 4.14.0
-          - 4.11.2
-          - 4.10.2
+          - 4.14.1
 
     runs-on: ${{ matrix.os }}
 
@@ -44,7 +42,7 @@ jobs:
           opam exec -- make build_release
           opam exec -- make test_release
           opam exec -- make install_release
-        if: matrix.ocaml-compiler == '4.14.0' || matrix.ocaml-compiler == '4.10.2'
+        if: matrix.ocaml-compiler == '4.14.1'
 
       - name: Check dev profile
         run: |
@@ -53,13 +51,13 @@ jobs:
           opam exec -- make build_dev
           opam exec -- make test_dev
           opam exec -- make install_dev
-        if: matrix.ocaml-compiler == '4.14.0'
+        if: matrix.ocaml-compiler == '4.14.1'
 
       # Send the coverage.
       - name: Send coverage
         run: |
           opam install bisect_ppx
           opam exec -- make send_coverage
-        if: matrix.ocaml-compiler == '4.14.0'
+        if: matrix.ocaml-compiler == '4.14.1'
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
