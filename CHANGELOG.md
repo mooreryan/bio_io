@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 0.7.0 (2023-09-10)
+
 - Update Jane Street libraries to `v0.16`
 - Update `ocamlformat` to `0.26.0`
 - Drop support for OCaml compilers < 4.14.0
