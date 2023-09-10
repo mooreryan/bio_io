@@ -239,7 +239,7 @@ end
     {[
       let total_length =
         Fastq.In_channel.with_file_fold_records "sequences.fastq" ~init:0
-          ~f:(fun length record -> length + Fastq.Record.seq_length record)
+          ~f:(fun length record -> length + Fastq.Record.seq_length record )
     ]}
 
     {2:pipelines Pipelines with records}

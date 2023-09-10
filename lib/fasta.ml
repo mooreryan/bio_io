@@ -226,7 +226,7 @@ end
     {[
       let total_length =
         Fasta.In_channel.with_file_fold_records "sequences.fasta" ~init:0
-          ~f:(fun length record -> length + Fasta.Record.seq_length record)
+          ~f:(fun length record -> length + Fasta.Record.seq_length record )
     ]}
 
     {2:pipelines Pipelines with records}

@@ -189,7 +189,7 @@ let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.tricky_seqs in
   let result =
     Fasta.In_channel.with_file_fold_records name ~init:""
-      ~f:(fun result record -> result ^ sprintf "%s\n" (serialize record))
+      ~f:(fun result record -> result ^ sprintf "%s\n" (serialize record) )
   in
   print_endline result ;
   [%expect
@@ -358,7 +358,7 @@ let%expect_test _ =
   let actual =
     Or_error.try_with (fun () ->
         Fasta.In_channel.with_file_fold_records name ~init:""
-          ~f:(fun _acc record -> Fasta.Record.to_string record) )
+          ~f:(fun _acc record -> Fasta.Record.to_string record ) )
   in
   print_endline
   @@ Sexp.to_string_hum ~indent:1 ([%sexp_of: String.t Or_error.t] actual) ;
@@ -551,7 +551,8 @@ let%expect_test _ =
   let name, _chan = write_tmp_file Test_fasta_in_channel_data.seqs in
   let total_length =
     Fasta.In_channel.with_file_fold_records name ~init:0
-      ~f:(fun length record -> length + String.length (Fasta.Record.seq record))
+      ~f:(fun length record ->
+        length + String.length (Fasta.Record.seq record) )
   in
   printf "%d\n" total_length ; [%expect {| 10 |}]
 

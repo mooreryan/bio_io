@@ -235,7 +235,7 @@ let operation_list_generator = QG.list_non_empty operation_generator
 (* Generate a Cigar string chunk: "23432I", etc. *)
 let cigar_chunk_with_count_generator =
   Q.Generator.map2 operation_generator positive_int_generator
-    ~f:(fun op count -> Int.to_string count ^ op)
+    ~f:(fun op count -> Int.to_string count ^ op )
 
 (* Generate a Cigar string chunk. These may have no count: "D", "1D", "23432I",
    etc. *)
