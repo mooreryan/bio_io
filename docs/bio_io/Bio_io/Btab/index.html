@@ -3,8 +3,10 @@
 
 let parse_argv () =
   match Sys.get_argv () with
-  | [| _; file_name |] -&gt; file_name
-  | _ -&gt; failwith &quot;missing file_name&quot;
+  | [|_; file_name|] -&gt;
+      file_name
+  | _ -&gt;
+      failwith &quot;missing file_name&quot;
 
 let file_name = parse_argv ()
 
@@ -12,4 +14,4 @@ let () =
   let open Bio_io.Btab in
   In_channel.with_file_iter_records file_name ~f:(fun r -&gt;
       Stdio.printf &quot;%s =&gt; %s (%.3f)\n&quot; (Record.query r) (Record.target r)
-        (Record.bits r))</code></pre><h2 id="modules"><a href="#modules" class="anchor"></a>Modules</h2><div class="odoc-spec"><div class="spec module" id="module-Record" class="anchored"><a href="#module-Record" class="anchor"></a><code><span><span class="keyword">module</span> <a href="Record/index.html">Record</a></span><span> : <span class="keyword">sig</span> ... <span class="keyword">end</span></span></code></div><div class="spec-doc"><p>A record type for Btab (Blast-tab) files</p></div></div><div class="odoc-spec"><div class="spec module" id="module-In_channel" class="anchored"><a href="#module-In_channel" class="anchor"></a><code><span><span class="keyword">module</span> <a href="In_channel/index.html">In_channel</a></span><span> : <span class="keyword">sig</span> ... <span class="keyword">end</span></span></code></div><div class="spec-doc"><p><code>In_channel</code> for Btab records.</p></div></div></div></body></html>
+        (Record.bits r) )</code></pre><h2 id="modules"><a href="#modules" class="anchor"></a>Modules</h2><div class="odoc-spec"><div class="spec module" id="module-Record" class="anchored"><a href="#module-Record" class="anchor"></a><code><span><span class="keyword">module</span> <a href="Record/index.html">Record</a></span><span> : <span class="keyword">sig</span> ... <span class="keyword">end</span></span></code></div><div class="spec-doc"><p>A record type for Btab (Blast-tab) files</p></div></div><div class="odoc-spec"><div class="spec module" id="module-In_channel" class="anchored"><a href="#module-In_channel" class="anchor"></a><code><span><span class="keyword">module</span> <a href="In_channel/index.html">In_channel</a></span><span> : <span class="keyword">sig</span> ... <span class="keyword">end</span></span></code></div><div class="spec-doc"><p><code>In_channel</code> for Btab records.</p></div></div></div></body></html>
