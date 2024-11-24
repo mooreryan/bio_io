@@ -27,29 +27,19 @@
  (depends
   bisect_ppx
   (core
-   (and
-    (>= "v0.16")
-    (< "v0.17")))
+   (>= "v0.16"))
   (core_bench
-   (and
-    (>= "v0.16")
-    (< "v0.17")))
+   (>= "v0.16"))
   (core_unix
-   (and
-    (>= "v0.16")
-    (< "v0.17")))
+   (>= "v0.16"))
   (ocaml
    (>= "4.14"))
   (ocamlformat
-   (and
-    (>= "0.26")
-    (< "0.27")))
+   (= "0.26.2"))
   (ocaml-lsp-server
    (>= "1.11"))
   (ppx_sexp_conv
-   (and
-    (>= "v0.16")
-    (< "v0.17")))))
+   (>= "v0.16"))))
 
 (package
  (name bio_io)
@@ -58,51 +48,33 @@
  (depends
   ; Runtime dependencies
   (base
-   (and
-    (>= "v0.16")
-    (< "v0.17")))
+   (>= "v0.16"))
   (ocaml
    (>= "4.14"))
   (ppx_compare
-   (and
-    (>= "v0.16")
-    (< "v0.17")))
+   (>= "v0.16"))
   (ppx_fields_conv
-   (and
-    (>= "v0.16")
-    (< "v0.17")))
+   (>= "v0.16"))
   (ppx_sexp_conv
-   (and
-    (>= "v0.16")
-    (< "v0.17")))
+   (>= "v0.16"))
   (stdio
-   (and
-    (>= "v0.16")
-    (< "v0.17")))
+   (>= "v0.16"))
   ; Test-only dependencies
   (ppx_assert
    (and
-    (and
-     (>= "v0.16")
-     (< "v0.17"))
+    (>= "v0.16")
     :with-test))
   (base_quickcheck
    (and
-    (and
-     (>= "v0.16")
-     (< "v0.17"))
+    (>= "v0.16")
     :with-test))
   (ppx_expect
    (and
-    (and
-     (>= "v0.16")
-     (< "v0.17"))
+    (>= "v0.16")
     :with-test))
   (ppx_inline_test
    (and
-    (and
-     (>= "v0.16")
-     (< "v0.17"))
+    (>= "v0.16")
     :with-test))
   (re
    (and
