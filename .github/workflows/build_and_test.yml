@@ -19,6 +19,7 @@ jobs:
           - ubuntu-latest
         ocaml-compiler:
           - 4.14.1
+          - 5.2.1
 
     runs-on: ${{ matrix.os }}
 
@@ -42,7 +43,6 @@ jobs:
           opam exec -- make build_release
           opam exec -- make test_release
           opam exec -- make install_release
-        if: matrix.ocaml-compiler == '4.14.1'
 
       - name: Check dev profile
         run: |
@@ -51,7 +51,6 @@ jobs:
           opam exec -- make build_dev
           opam exec -- make test_dev
           opam exec -- make install_dev
-        if: matrix.ocaml-compiler == '4.14.1'
 
       # Send the coverage.
       - name: Send coverage
